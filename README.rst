@@ -1,4 +1,4 @@
-num2words library - Convert numbers to words in multiple languages
+num2words library - Convert numbers to words in multiple languages + Luxembourgish!
 ==================================================================
 
 .. image:: https://img.shields.io/pypi/v/num2words.svg
