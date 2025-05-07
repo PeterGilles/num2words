@@ -87,45 +87,59 @@ class Num2Word_LB(Num2Word_EU):
     def merge(self, curr, next):
         ctext, cnum, ntext, nnum = curr + next
     
-        # Special case for 1
+        # Inversion logic for numbers < 100
+        if cnum < 10 and 10 < nnum < 100:
+            # determine joining vowel: 'a' before 'v', 'f', 's'
+            if ntext.startswith(("v", "f", "s")):
+                joiner = "a"
+            else:
+                joiner = "an"
+    
+            # Use 'een' for 1 (not 'eent')
+            if cnum == 1:
+                ctext = "een"
+            elif cnum == 2:
+                ctext = "zwee"
+    
+            return (ctext + joiner + ntext, cnum + nnum)
+    
+        # Use "een" before large numerals like 100, 1000, million
         if cnum == 1:
-            if nnum in [100, 1000]:
+            if nnum == 100 or nnum == 1000:
                 return ("een" + ntext, nnum)
             elif nnum >= 10**6:
                 if any(ntext.startswith(prefix) for prefix in ("Millioun", "Milliard", "Billioun", "Billiard")):
-                    return ("eng " + ntext, nnum)
+                    ctext = "eng"
                 else:
-                    return ("een " + ntext, nnum)
+                    ctext = "een"
             else:
                 return next
     
         # Multiplicative case
         if nnum > cnum:
-            if nnum >= 10**6:
-                if cnum > 1:
-                    if ntext.endswith("e"):
-                        ntext += "n"
-                    else:
-                        ntext += "en"
+            if nnum >= 10**6 and cnum > 1:
+                if ntext.endswith("e"):
+                    ntext += "n"
+                else:
+                    ntext += "en"
                 ctext += " "
-            val = cnum * nnum
-            return (ctext + ntext, val)
+            return (ctext + ntext, cnum * nnum)
     
-        # Additive case: e.g., 42 = zweeavéierzeg
+        # Additive case
         if nnum < 10 < cnum < 100:
-            if ntext.startswith(("véier", "fënnef", "sechs", "siwen")):
+            if nnum == 1:
+                ntext = "een"
+            if ctext.startswith(("v", "f", "s")):
                 joiner = "a"
             else:
                 joiner = "an"
-            if nnum == 1:
-                ntext = "een"
-            word = ctext + joiner + ntext
-            return (word, cnum + nnum)
+            return (ntext + joiner + ctext, cnum + nnum)
     
-        # Fallback additive case
         if cnum >= 10**6:
             ctext += " "
+    
         return (ctext + ntext, cnum + nnum)
+
 
     def to_ordinal(self, value):
         self.verify_ordinal(value)
