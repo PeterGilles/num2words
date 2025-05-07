@@ -61,7 +61,7 @@ CONVERTER_CLASSES = {
     'ko': lang_KO.Num2Word_KO(),
     'kz': lang_KZ.Num2Word_KZ(),
     'mn': lang_MN.Num2Word_MN(),
-    'lb': lang_MN.Num2Word_LB(),  
+    'lb': lang_LB.Num2Word_LB(),  
     'lt': lang_LT.Num2Word_LT(),
     'lv': lang_LV.Num2Word_LV(),
     'pl': lang_PL.Num2Word_PL(),
