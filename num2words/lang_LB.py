@@ -88,20 +88,34 @@ class Num2Word_LB(Num2Word_EU):
         if number < 0:
             return self.negword + self.to_cardinal(abs(number))
     
-        if number < 20:
-            return self.low_numwords[20 - number - 1]
+        if number == 0:
+            return "null"
+    
+        units_map = {
+            1: "een",
+            2: "zwee",
+            3: "dräi",
+            4: "véier",
+            5: "fënnef",
+            6: "sechs",
+            7: "siwen",
+            8: "aacht",
+            9: "néng"
+        }
+    
+        tens_map = dict(self.mid_numwords)
     
         if 21 <= number <= 99 and number % 10 != 0:
             unit = number % 10
             ten = number - unit
-            unit_word = self.to_cardinal(unit)
-            ten_word = dict(self.mid_numwords)[ten]
-            joiner = "a" if ten_word.startswith(("véier", "fënnef", "sech", "siwen")) else "an"
+            unit_word = units_map[unit]
+            ten_word = tens_map.get(ten, "")
+            joiner = "a" if ten_word.startswith(("véier", "fënnef", "foffzeg", "sech", "siwen")) else "an"
             return unit_word + joiner + ten_word
     
-        # Default fallback
-        words, num = self.clean(number)
-        return words
+        # Special cases for 1–20 and multiples of 10
+        return super().to_cardinal(number)
+
     
     def merge(self, curr, next):
         ctext, cnum, ntext, nnum = curr + next
