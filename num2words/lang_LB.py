@@ -84,85 +84,45 @@ class Num2Word_LB(Num2Word_EU):
                      "rde": "rds",
                      "rden": "rds"}
 
-    def merge(self, curr, next):
+    def to_cardinal(self, number):
+        if number < 0:
+            return self.negword + self.to_cardinal(abs(number))
+    
+        if number < 20:
+            return self.low_numwords[20 - number - 1]
+    
+        if 21 <= number <= 99 and number % 10 != 0:
+            unit = number % 10
+            ten = number - unit
+            unit_word = self.to_cardinal(unit)
+            ten_word = dict(self.mid_numwords)[ten]
+            joiner = "a" if ten_word.startswith(("véier", "fënnef", "sech", "siwen")) else "an"
+            return unit_word + joiner + ten_word
+    
+        # Default fallback
+        words, num = self.clean(number)
+        return words
+    
+     def merge(self, curr, next):
         ctext, cnum, ntext, nnum = curr + next
     
-        # Inversion logic for numbers < 100
-        if cnum < 10 and 10 < nnum < 100:
-            # determine joining vowel: 'a' before 'v', 'f', 's'
-            if ntext.startswith(("v", "f", "s")):
-                joiner = "a"
-            else:
-                joiner = "an"
-    
-            # Use 'een' for 1 (not 'eent')
-            if cnum == 1:
-                ctext = "een"
-            elif cnum == 2:
-                ctext = "zwee"
-    
-            return (ctext + joiner + ntext, cnum + nnum)
-    
-        # Use "een" before large numerals like 100, 1000, million
         if cnum == 1:
-            if nnum == 100 or nnum == 1000:
+            if nnum in (100, 1000):
                 return ("een" + ntext, nnum)
-            elif nnum >= 10**6:
+            if nnum >= 10**6:
                 if any(ntext.startswith(prefix) for prefix in ("Millioun", "Milliard", "Billioun", "Billiard")):
-                    ctext = "eng"
-                else:
-                    ctext = "een"
-            else:
-                return next
+                    return ("eng" + ntext, nnum)
+                return ("een" + ntext, nnum)
+            return next
     
-        # Multiplicative case
         if nnum > cnum:
             if nnum >= 10**6 and cnum > 1:
-                if ntext.endswith("e"):
-                    ntext += "n"
-                else:
-                    ntext += "en"
-                ctext += " "
-            return (ctext + ntext, cnum * nnum)
-    
-        # Additive case
-        if nnum < 10 < cnum < 100:
-            if nnum == 1:
-                ntext = "een"
-            if ctext.startswith(("v", "f", "s")):
-                joiner = "a"
-            else:
-                joiner = "an"
-            return (ntext + joiner + ctext, cnum + nnum)
-    
-        if cnum >= 10**6:
-            ctext += " "
+                ntext += "en" if not ntext.endswith("e") else "n"
+            return (ctext + " " + ntext, cnum * nnum)
     
         return (ctext + ntext, cnum + nnum)
 
 
-    def to_ordinal(self, value):
-        self.verify_ordinal(value)
-        outword = self.to_cardinal(value).lower()
-        for key in self.ords:
-            if outword.endswith(key):
-                outword = outword[:len(outword) - len(key)] + self.ords[key]
-                break
-
-        res = outword + "ten"
-
-        # Exception: "hundertste" is usually preferred over "einhundertste"
-        if res == "eendausendsten" or res == "eenhonnerstten":
-            res = res.replace("een", "", 1)
-        # ... similarly for "millionste" etc.
-        res = re.sub(r'een ([a-z]+(illioun|illiard)st)$',
-                     lambda m: m.group(1), res)
-        # Ordinals involving "Million" etc. are written without a space.
-        # see https://de.wikipedia.org/wiki/Million#Sprachliches
-        res = re.sub(r' ([a-z]+(illioun|illiard)st)$',
-                     lambda m: m.group(1), res)
-
-        return res
 
     def to_ordinal_num(self, value):
         self.verify_ordinal(value)
