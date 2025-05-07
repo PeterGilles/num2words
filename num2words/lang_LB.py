@@ -84,7 +84,7 @@ class Num2Word_LB(Num2Word_EU):
                      "rde": "rds",
                      "rden": "rds"}
 
-     def to_cardinal(self, number):
+    def to_cardinal(self, number):
         if number < 0:
             return self.negword + self.to_cardinal(abs(number))
     
@@ -103,7 +103,7 @@ class Num2Word_LB(Num2Word_EU):
         words, num = self.clean(number)
         return words
     
-     def merge(self, curr, next):
+    def merge(self, curr, next):
         ctext, cnum, ntext, nnum = curr + next
     
         if cnum == 1:
@@ -121,8 +121,6 @@ class Num2Word_LB(Num2Word_EU):
             return (ctext + " " + ntext, cnum * nnum)
     
         return (ctext + ntext, cnum + nnum)
-
-
 
     def to_ordinal_num(self, value):
         self.verify_ordinal(value)
