@@ -84,7 +84,7 @@ class Num2Word_LB(Num2Word_EU):
                      "rde": "rds",
                      "rden": "rds"}
 
-    def to_cardinal(self, number):
+     def to_cardinal(self, number):
         if number < 0:
             return self.negword + self.to_cardinal(abs(number))
     
