@@ -84,54 +84,48 @@ class Num2Word_LB(Num2Word_EU):
                      "rde": "rds",
                      "rden": "rds"}
 
-        def merge(self, curr, next):
-            ctext, cnum, ntext, nnum = curr + next
-        
-            # Special case: handle 'een' vs. 'eng'
-            if cnum == 1:
-                if nnum in [100, 1000]:
-                    return ("een" + ntext, nnum)
-                elif nnum >= 10**6:
-                    if any(ntext.startswith(prefix) for prefix in ("Millioun", "Milliard", "Billioun", "Billiard")):
-                        return ("eng " + ntext, nnum)
-                    else:
-                        return ("een " + ntext, nnum)
-                else:
-                    return next  # skip adding "een" in cases like 21 → eenanzwanzeg (handled below)
-        
-            if nnum > cnum:
-                # Multiplicative: e.g., 2 * 1000 = zweedausend
-                if nnum >= 10**6:
-                    if cnum > 1:
-                        if ntext.endswith("e"):
-                            ntext += "n"
-                        else:
-                            ntext += "en"
-                    ctext += " "
-                val = cnum * nnum
-                word = ctext + ntext
-                return (word, val)
-        
-            # Additive case: 42 = zweeavéierzeg
-            if nnum < 10 < cnum < 100:
-                # Insert 'a' instead of 'an' before specific consonant-starting numerals
-                if ntext.startswith(("véier", "fënnef", "sechs", "siwen")):
-                    joiner = "a"
-                else:
-                    joiner = "an"
-        
-                # Use 'een' instead of 'eent' in compound cases
-                if nnum == 1:
-                    ntext = "een"
-        
-                word = ctext + joiner + ntext
-                return (word, cnum + nnum)
-        
-            # General additive fallback
-            if cnum >= 10**6:
-                ctext += " "
-            word = ctext + ntext
-            return (word, cnum + nnum)
+	def merge(self, curr, next):
+		ctext, cnum, ntext, nnum = curr + next
+	
+		# Special case for 1
+		if cnum == 1:
+			if nnum in [100, 1000]:
+				return ("een" + ntext, nnum)
+			elif nnum >= 10**6:
+				if any(ntext.startswith(prefix) for prefix in ("Millioun", "Milliard", "Billioun", "Billiard")):
+					return ("eng " + ntext, nnum)
+				else:
+					return ("een " + ntext, nnum)
+			else:
+				return next
+	
+		# Multiplicative case
+		if nnum > cnum:
+			if nnum >= 10**6:
+				if cnum > 1:
+					if ntext.endswith("e"):
+						ntext += "n"
+					else:
+						ntext += "en"
+				ctext += " "
+			val = cnum * nnum
+			return (ctext + ntext, val)
+	
+		# Additive case: e.g., 42 = zweeavéierzeg
+		if nnum < 10 < cnum < 100:
+			if ntext.startswith(("véier", "fënnef", "sechs", "siwen")):
+				joiner = "a"
+			else:
+				joiner = "an"
+			if nnum == 1:
+				ntext = "een"
+			word = ctext + joiner + ntext
+			return (word, cnum + nnum)
+	
+		# Fallback additive case
+		if cnum >= 10**6:
+			ctext += " "
+		return (ctext + ntext, cnum + nnum)
 
     def to_ordinal(self, value):
         self.verify_ordinal(value)
