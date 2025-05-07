@@ -84,49 +84,54 @@ class Num2Word_LB(Num2Word_EU):
                      "rde": "rds",
                      "rden": "rds"}
 
-    def merge(self, curr, next):
-        ctext, cnum, ntext, nnum = curr + next
-    
-        # Rule: "eenhonnert" not "eenthonnert"
-        if cnum == 1:
-            if nnum == 100 or nnum == 1000:
-                return ("een" + ntext, nnum)
-            elif nnum < 10**6:
-                return next
-            ctext = "een"
-    
-        if nnum > cnum:
-            if nnum >= 10**6:
-                if cnum > 1:
-                    if ntext.endswith("e"):
-                        ntext += "n"
+        def merge(self, curr, next):
+            ctext, cnum, ntext, nnum = curr + next
+        
+            # Special case: handle 'een' vs. 'eng'
+            if cnum == 1:
+                if nnum in [100, 1000]:
+                    return ("een" + ntext, nnum)
+                elif nnum >= 10**6:
+                    if any(ntext.startswith(prefix) for prefix in ("Millioun", "Milliard", "Billioun", "Billiard")):
+                        return ("eng " + ntext, nnum)
                     else:
-                        ntext += "en"
-                ctext += " "
-            val = cnum * nnum
-        else:
+                        return ("een " + ntext, nnum)
+                else:
+                    return next  # skip adding "een" in cases like 21 → eenanzwanzeg (handled below)
+        
+            if nnum > cnum:
+                # Multiplicative: e.g., 2 * 1000 = zweedausend
+                if nnum >= 10**6:
+                    if cnum > 1:
+                        if ntext.endswith("e"):
+                            ntext += "n"
+                        else:
+                            ntext += "en"
+                    ctext += " "
+                val = cnum * nnum
+                word = ctext + ntext
+                return (word, val)
+        
+            # Additive case: 42 = zweeavéierzeg
             if nnum < 10 < cnum < 100:
-                # Rule: use 'a' instead of 'an' before certain words
+                # Insert 'a' instead of 'an' before specific consonant-starting numerals
                 if ntext.startswith(("véier", "fënnef", "sechs", "siwen")):
                     joiner = "a"
                 else:
                     joiner = "an"
-    
-                # Rule: use "een" not "eent" in compounds
+        
+                # Use 'een' instead of 'eent' in compound cases
                 if nnum == 1:
                     ntext = "een"
-    
-                ntext, ctext = ctext, ntext + joiner
-            elif cnum >= 10**6:
+        
+                word = ctext + joiner + ntext
+                return (word, cnum + nnum)
+        
+            # General additive fallback
+            if cnum >= 10**6:
                 ctext += " "
-            val = cnum + nnum
-    
-        word = ctext + ntext
-        return (word, val)
-
-
-        word = ctext + ntext
-        return (word, val)
+            word = ctext + ntext
+            return (word, cnum + nnum)
 
     def to_ordinal(self, value):
         self.verify_ordinal(value)
