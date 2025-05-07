@@ -86,16 +86,17 @@ class Num2Word_LB(Num2Word_EU):
 
     def merge(self, curr, next):
         ctext, cnum, ntext, nnum = curr + next
-
+    
+        # Rule: "eenhonnert" not "eenthonnert"
         if cnum == 1:
             if nnum == 100 or nnum == 1000:
-                return ("eent" + ntext, nnum)
-            elif nnum < 10 ** 6:
+                return ("een" + ntext, nnum)
+            elif nnum < 10**6:
                 return next
             ctext = "een"
-
+    
         if nnum > cnum:
-            if nnum >= 10 ** 6:
+            if nnum >= 10**6:
                 if cnum > 1:
                     if ntext.endswith("e"):
                         ntext += "n"
@@ -105,12 +106,24 @@ class Num2Word_LB(Num2Word_EU):
             val = cnum * nnum
         else:
             if nnum < 10 < cnum < 100:
+                # Rule: use 'a' instead of 'an' before certain words
+                if ntext.startswith(("véier", "fënnef", "sechs", "siwen")):
+                    joiner = "a"
+                else:
+                    joiner = "an"
+    
+                # Rule: use "een" not "eent" in compounds
                 if nnum == 1:
                     ntext = "een"
-                ntext, ctext = ctext, ntext + "an"
-            elif cnum >= 10 ** 6:
+    
+                ntext, ctext = ctext, ntext + joiner
+            elif cnum >= 10**6:
                 ctext += " "
             val = cnum + nnum
+    
+        word = ctext + ntext
+        return (word, val)
+
 
         word = ctext + ntext
         return (word, val)
