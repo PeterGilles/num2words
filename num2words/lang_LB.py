@@ -23,6 +23,13 @@ from .lang_EU import Num2Word_EU
 
 
 class Num2Word_LB(Num2Word_EU):
+
+    def str_to_number(self, value):
+        from decimal import Decimal
+        if isinstance(value, str):
+            value = value.replace(",", ".").strip()
+        return Decimal(value)
+    
     CURRENCY_FORMS = {
         'EUR': (('Euro', 'Euro'), ('Cent', 'Cent')),
         'GBP': (('Pond', 'Pond'), ('Penny', 'Pence')),
@@ -67,11 +74,13 @@ class Num2Word_LB(Num2Word_EU):
                              (90, "nonnzeg"), (80, "achtzeg"), (70, "siwenzeg"),
                              (60, "sechzeg"), (50, "foffzeg"),
                              (40, "v\xE9ierzeg"), (30, "dr\xebsseg")]
+                             
         self.low_numwords = ["zwanzeg", "nonnzéng", "uechtzéng", "siwenzéng",
-                             "siechzéng", "foffzéng", "v\xE9ierzéng", "dr\xe4izéng",
-                             "zwielef", "eelef", "zéng", "néng", "aacht",
-                             "siwen", "sechs", "f\xebnef", "v\xe9ier", "dr\xe4i",
-                             "zwee", "eent", "null"]
+                     "siechzéng", "foffzéng", "véierzéng", "dräizéng",
+                     "zwielef", "eelef", "zéng", "néng", "aacht",
+                     "siwen", "sechs", "fënnef", "véier", "dräi",
+                     "zwee", "eent", "null"]
+                             
         self.ords = {"eent": "\xe9scht",
                      "dr\xe4i": "dr\xe9t",
                      "aacht": "aach",
@@ -153,3 +162,25 @@ class Num2Word_LB(Num2Word_EU):
             return self.to_cardinal(val)
         return self.to_splitnum(val, hightxt="honnert", longval=longval)\
             .replace(' ', '')
+            
+    def to_percentage(self, val):
+        # Accept string or number input
+        if isinstance(val, str):
+            val = val.strip().replace(",", ".")
+            try:
+                val = float(val)
+            except ValueError:
+                raise ValueError(f"Cannot interpret percentage: '{val}'")
+    
+        int_part = int(val)
+        decimal_str = f"{val:.10f}".split(".")[1].rstrip("0")  # keep all digits, strip trailing zeros
+    
+        words = self.to_cardinal(int_part)
+    
+        if decimal_str:
+            decimal_words = " ".join([self.to_cardinal(int(d)) for d in decimal_str])
+            words += f" {self.pointword.lower()} {decimal_words}"
+    
+        return words + " Prozent"
+
+
