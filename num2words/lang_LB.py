@@ -347,7 +347,7 @@ class Num2Word_LB(Num2Word_EU):
         """
         Convert expressions like '100ml' or '60gr' to text.
         Handles spaces between number and unit (e.g., '50 ml', '60 gr').
-        Also handles percentages like '25%'.
+        Also handles percentages like '25%' and temperature in '90°'.
         
         Args:
             text (str): Text containing number with unit
@@ -355,40 +355,62 @@ class Num2Word_LB(Num2Word_EU):
         Returns:
             str: Text with number converted to words and unit expanded
         """
-        # Define unit mappings
-        unit_mappings = {
-            'ml': 'Milliliter',
-            'gr': 'Gramm'
-        }
+        # Handle units - milliliters (ml)
+        ml_pattern = r'\b(\d+)\s*ml\b'
         
-        # Pattern to match number followed by unit, with or without space
-        unit_pattern = r'(\d+)\s*(ml|gr)\b'
-        
-        def replace_unit_match(match):
-            number = int(match.group(1))
-            unit_abbrev = match.group(2)
-            unit_full = unit_mappings.get(unit_abbrev, unit_abbrev)
+        def replace_ml(match):
+            num = int(match.group(1))
+            word = self.to_cardinal(num)
+            if num == 1:  # Special case for singular
+                word = "een"
+            return f"{word} Milliliter"
             
-            # Convert number to words
-            number_words = self.to_cardinal(number)
+        text = re.sub(ml_pattern, replace_ml, text)
+        
+        # Handle units - grams (gr)
+        gr_pattern = r'\b(\d+)\s*gr\b'
+        
+        def replace_gr(match):
+            num = int(match.group(1))
+            word = self.to_cardinal(num)
+            if num == 1:  # Special case for singular
+                word = "een"
+            return f"{word} Gramm"
             
-            # Fix for singular forms: 1ml should be "een Milliliter" not "eent Milliliter"
-            if number == 1:
-                number_words = "een"
+        text = re.sub(gr_pattern, replace_gr, text)
+        
+        # Handle units - temperature (°)
+        temp_pattern = r'\b(\d+)\s*°\b'
+        
+        def replace_temp(match):
+            num = int(match.group(1))
+            word = self.to_cardinal(num)
+            if num == 1:  # Special case for singular
+                word = "een"
+            return f"{word} Grad"
             
-            return f"{number_words} {unit_full}"
+        text = re.sub(temp_pattern, replace_temp, text)
         
-        # Replace unit expressions in the text
-        result = re.sub(unit_pattern, replace_unit_match, text)
+        # Handle units - percentage (%)
+        percent_pattern = r'\b(\d+)\s*%\b'
         
-        # Also handle percentages (25%)
-        percent_pattern = r'(\d+)%'
+        def replace_percent(match):
+            num = int(match.group(1))
+            # Use the existing to_percentage method
+            return self.to_percentage(num)
+            
+        text = re.sub(percent_pattern, replace_percent, text)
         
-        def replace_percent_match(match):
-            number = int(match.group(1))
-            return f"{self.to_percentage(number)}"
+        # Handle years with -er suffix (e.g., 1970er)
+        year_pattern = r'\b(1\d{3}|20\d{2})er\b'
         
-        # Replace percentage expressions
-        result = re.sub(percent_pattern, replace_percent_match, result)
+        def replace_year_with_suffix(match):
+            year = int(match.group(1))
+            # Convert the year to words
+            year_text = self.to_year(year)
+            # Add the -er suffix
+            return f"{year_text}er"
         
-        return result
+        text = re.sub(year_pattern, replace_year_with_suffix, text)
+        
+        return text

@@ -94,7 +94,7 @@ CONVERTER_CLASSES = {
     'zh_HK': lang_ZH_HK.Num2Word_ZH_HK(),
 }
 
-CONVERTES_TYPES = ['cardinal', 'ordinal', 'ordinal_num', 'year', 'currency']
+CONVERTES_TYPES = ['cardinal', 'ordinal', 'ordinal_num', 'year', 'currency', 'unit']
 
 
 def num2words(number, ordinal=False, lang='en', to='cardinal', **kwargs):
@@ -106,6 +106,15 @@ def num2words(number, ordinal=False, lang='en', to='cardinal', **kwargs):
         raise NotImplementedError()
     converter = CONVERTER_CLASSES[lang]
 
+    # Special case for text units (like "100ml", "50gr", etc.)
+    if to == 'unit' and isinstance(number, str):
+        # Check if the converter has the 'to_unit' method
+        if hasattr(converter, 'to_unit'):
+            return converter.to_unit(number)
+        else:
+            raise NotImplementedError(f"Language {lang} does not support unit conversion")
+
+    # Regular number conversion
     if isinstance(number, str):
         number = converter.str_to_number(number)
 
