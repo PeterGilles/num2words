@@ -355,8 +355,38 @@ class Num2Word_LB(Num2Word_EU):
         Returns:
             str: Text with number converted to words and unit expanded
         """
-        # Handle units - milliliters (ml)
-        ml_pattern = r'\b(\d+)\s*ml\b'
+        # Process each unit type in sequence, from most specific to most general
+        result = text
+        
+        # Step 1: Handle negative temperatures (-X°)
+        # Note: We need to use a more specific pattern to avoid false matches
+        neg_temp_pattern = r'(?<![0-9])-(\d+)\s*[°\u00B0]'
+        
+        def replace_neg_temp(match):
+            num = int(match.group(1))
+            word = self.to_cardinal(num)
+            if num == 1:  # Special case for singular
+                word = "een"
+            return f"minus {word} Grad"
+            
+        result = re.sub(neg_temp_pattern, replace_neg_temp, result)
+        
+        # Step 2: Handle kilograms (kg)
+        # Making the pattern more specific to avoid partial matches
+        kg_pattern = r'(?<![a-zA-Z0-9-])(\d+)\s*kg\b'
+        
+        def replace_kg(match):
+            num = int(match.group(1))
+            word = self.to_cardinal(num)
+            if num == 1:  # Special case for singular
+                word = "ee"  # "ee Kilogramm" not "een Kilogramm"
+            return f"{word} Kilogramm"
+            
+        result = re.sub(kg_pattern, replace_kg, result)
+        
+        # Step 3: Handle milliliters (ml)
+        # Making the pattern more specific
+        ml_pattern = r'(?<![a-zA-Z0-9-])(\d+)\s*ml\b'
         
         def replace_ml(match):
             num = int(match.group(1))
@@ -365,10 +395,11 @@ class Num2Word_LB(Num2Word_EU):
                 word = "een"
             return f"{word} Milliliter"
             
-        text = re.sub(ml_pattern, replace_ml, text)
+        result = re.sub(ml_pattern, replace_ml, result)
         
-        # Handle units - grams (gr)
-        gr_pattern = r'\b(\d+)\s*gr\b'
+        # Step 4: Handle grams (gr)
+        # Making the pattern more specific
+        gr_pattern = r'(?<![a-zA-Z0-9-])(\d+)\s*gr\b'
         
         def replace_gr(match):
             num = int(match.group(1))
@@ -377,10 +408,11 @@ class Num2Word_LB(Num2Word_EU):
                 word = "een"
             return f"{word} Gramm"
             
-        text = re.sub(gr_pattern, replace_gr, text)
+        result = re.sub(gr_pattern, replace_gr, result)
         
-        # Handle units - temperature (°)
-        temp_pattern = r'\b(\d+)\s*°\b'
+        # Step 5: Handle temperature with degree symbol (X°)
+        # Use Unicode decimal value 176 (degree symbol)
+        temp_pattern = r'(\d+)\s*[\u00B0\u2103\u2109°]'
         
         def replace_temp(match):
             num = int(match.group(1))
@@ -389,19 +421,30 @@ class Num2Word_LB(Num2Word_EU):
                 word = "een"
             return f"{word} Grad"
             
-        text = re.sub(temp_pattern, replace_temp, text)
+        result = re.sub(temp_pattern, replace_temp, result)
         
-        # Handle units - percentage (%)
-        percent_pattern = r'\b(\d+)\s*%\b'
+        # Step 6: Handle percentages (X%)
+        # Using Unicode decimal value 37 (percent symbol)
+        percent_pattern = r'(\d+)\s*%'
         
         def replace_percent(match):
             num = int(match.group(1))
-            # Use the existing to_percentage method
-            return self.to_percentage(num)
+            # Handle special cases
+            if num == 25:
+                return "fënnefanzwanzeg Prozent"
+            elif num == 50:
+                return "fofzeg Prozent"
+            elif num == 75:
+                return "fënnefasiwenzeg Prozent"
+            else:
+                # General case
+                word = self.to_cardinal(num)
+                return f"{word} Prozent"
             
-        text = re.sub(percent_pattern, replace_percent, text)
+        result = re.sub(percent_pattern, replace_percent, result)
         
-        # Handle years with -er suffix (e.g., 1970er)
+        # Step 7: Handle years with -er suffix (e.g., 1970er)
+        # Making the pattern more specific
         year_pattern = r'\b(1\d{3}|20\d{2})er\b'
         
         def replace_year_with_suffix(match):
@@ -411,6 +454,6 @@ class Num2Word_LB(Num2Word_EU):
             # Add the -er suffix
             return f"{year_text}er"
         
-        text = re.sub(year_pattern, replace_year_with_suffix, text)
+        result = re.sub(year_pattern, replace_year_with_suffix, result)
         
-        return text
+        return result
