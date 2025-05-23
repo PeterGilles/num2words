@@ -65,12 +65,12 @@ class Num2Word_LB(Num2Word_EU):
 
         self.mid_numwords = [
             (1000, "dausend"), (100, "honnert"), (90, "nonnzeg"), (80, "achtzeg"),
-            (70, "siwenzeg"), (60, "sechzeg"), (50, "fofzeg"),
+            (70, "siwwenzeg"), (60, "sechzeg"), (50, "fofzeg"),
             (40, "véierzeg"), (30, "drësseg")
         ]
 
         self.low_numwords = [
-            "zwanzeg", "nonnzéng", "uechtzéng", "siwenzéng", "siechzéng", "fofzéng",
+            "zwanzeg", "nonnzéng", "uechtzéng", "siwwenzéng", "siechzéng", "fofzéng",
             "véierzéng", "dräizéng", "zwielef", "eelef", "zéng", "néng",
             "aacht", "siwen", "sechs", "fënnef", "véier", "dräi", "zwee", "eent", "null"
         ]
@@ -135,7 +135,7 @@ class Num2Word_LB(Num2Word_EU):
                     ten_word = f"[{ten}]"  # Fallback
             
             # Choose appropriate joiner based on tens word
-            joiner = "a" if ten_word.startswith(("véier", "fënnef", "fofzeg", "sech", "siwen")) else "an"
+            joiner = "a" if ten_word.startswith(("véier", "fënnef", "fofzeg", "sech", "siwwen")) else "an"
             
             return unit_word + joiner + ten_word
             
@@ -243,7 +243,7 @@ class Num2Word_LB(Num2Word_EU):
             24: "véieranzwanzegsten",
             25: "fënnefanzwanzegsten",
             26: "sechsanzwanzegsten",
-            27: "siwenanzwanzegsten",
+            27: "siwwenanzwanzegsten",
             28: "aachtanzwanzegsten",
             29: "nénganzwanzegsten",
             30: "drëssegsten",
@@ -435,7 +435,7 @@ class Num2Word_LB(Num2Word_EU):
             elif num == 50:
                 return "fofzeg Prozent"
             elif num == 75:
-                return "fënnefasiwenzeg Prozent"
+                return "fënnefasiwwenzeg Prozent"
             else:
                 # General case
                 word = self.to_cardinal(num)
