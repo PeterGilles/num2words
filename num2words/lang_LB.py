@@ -64,13 +64,13 @@ class Num2Word_LB(Num2Word_EU):
         self.high_numwords = ["zent"] + self.gen_high_numwords(units, tens, lows)
 
         self.mid_numwords = [
-            (1000, "dausend"), (100, "honnert"), (90, "nonnzeg"), (80, "achtzeg"),
+            (1000, "dausend"), (100, "honnert"), (90, "nonzeg"), (80, "achtzeg"),
             (70, "siwwenzeg"), (60, "sechzeg"), (50, "fofzeg"),
             (40, "véierzeg"), (30, "drësseg")
         ]
 
         self.low_numwords = [
-            "zwanzeg", "nonnzéng", "uechtzéng", "siwwenzéng", "siechzéng", "fofzéng",
+            "zwanzeg", "nonzéng", "uechtzéng", "siwwenzéng", "siechzéng", "fofzéng",
             "véierzéng", "dräizéng", "zwielef", "eelef", "zéng", "néng",
             "aacht", "siwen", "sechs", "fënnef", "véier", "dräi", "zwee", "eent", "null"
         ]
@@ -235,7 +235,7 @@ class Num2Word_LB(Num2Word_EU):
             16: "siechzéngten",
             17: "siwwenzéngten",
             18: "uechtzéngten",
-            19: "nonnzéngten",
+            19: "nonzéngten",
             20: "zwanzegsten",
             21: "eenanzwanzegsten",
             22: "zweeanzwanzegsten",
