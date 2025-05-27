@@ -145,6 +145,222 @@ def test_normalizer():
         print()
 
 
+def test_ordinals():
+    lb = Num2Word_LB()
+    cases = [
+        (100, "honnertsten"),
+        (101, "eenhonnertéischten"),
+        (102, "eenhonnertzweeten"),
+        (103, "eenhonnertdrëtten"),
+        (104, "eenhonnertvéierten"),
+        (105, "eenhonnertfënneften"),
+        (106, "eenhonnertsechsten"),
+        (107, "eenhonnertsiwenten"),
+        (108, "eenhonnertaachten"),
+        (109, "eenhonnertnéngten"),
+        (110, "eenhonnerzéngten"),
+        (111, "eenhonnerteeleften"),
+        (200, "zweehonnertsten"),
+        (201, "zweehonnertéischten"),
+        (202, "zweehonnertzweeten"),
+        (203, "zweehonnertdrëtten"),
+        (204, "zweehonnertvéierten"),
+        (205, "zweehonnertfënneften"),
+        (206, "zweehonnertsechsten"),
+        (207, "zweehonnertsiwenten"),
+        (208, "zweehonnertaachten"),
+        (209, "zweehonnertnéngten"),
+        (210, "zweehonnerzéngten"),
+        (211, "zweehonnerteeleften"),
+        (300, "dräihonnertsten"),
+        (301, "dräihonnertéischten"),
+        (302, "dräihonnertzweeten"),
+        (303, "dräihonnertdrëtten"),
+        (304, "dräihonnertvéierten"),
+        (305, "dräihonnertfënneften"),
+        (306, "dräihonnertsechsten"),
+        (307, "dräihonnertsiwenten"),
+        (308, "dräihonnertaachten"),
+        (309, "dräihonnertnéngten"),
+        (310, "dräihonnerzéngten"),
+        (311, "dräihonnerteeleften"),
+        (400, "véierhonnertsten"),
+        (401, "véierhonnertéischten"),
+        (402, "véierhonnertzweeten"),
+        (403, "véierhonnertdrëtten"),
+        (404, "véierhonnertvéierten"),
+        (405, "véierhonnertfënneften"),
+        (406, "véierhonnertsechsten"),
+        (407, "véierhonnertsiwenten"),
+        (408, "véierhonnertaachten"),
+        (409, "véierhonnertnéngten"),
+        (410, "véierhonnertzéngten"),
+        (411, "véierhonnerteeleften"),
+        (500, "fënnefhonnertsten"),
+        (501, "fënnefhonnertéischten"),
+        (502, "fënnefhonnertzweeten"),
+        (503, "fënnefhonnertdrëtten"),
+        (504, "fënnefhonnertvéierten"),
+        (505, "fënnefhonnertfënneften"),
+        (506, "fënnefhonnertsechsten"),
+        (507, "fënnefhonnertsiwenten"),
+        (508, "fënnefhonnertaachten"),
+        (509, "fënnefhonnertnéngten"),
+        (510, "fënnefhonnertzéngten"),
+        (511, "fënnefhonnerteeleften"),
+        (600, "sechshonnertsten"),
+        (601, "sechshonnertéischten"),
+        (602, "sechshonnertzweeten"),
+        (603, "sechshonnertdrëtten"),
+        (604, "sechshonnertvéierten"),
+        (605, "sechshonnertfënneften"),
+        (606, "sechshonnertsechsten"),
+        (607, "sechshonnertsiwenten"),
+        (608, "sechshonnertaachten"),
+        (609, "sechshonnertnéngten"),
+        (610, "sechshonnertzéngten"),
+        (611, "sechshonnerteeleften"),
+        (700, "siwenhonnertsten"),
+        (701, "siwenhonnertéischten"),
+        (702, "siwenhonnertzweeten"),
+        (703, "siwenhonnertdrëtten"),
+        (704, "siwenhonnertvéierten"),
+        (705, "siwenhonnertfënneften"),
+        (706, "siwenhonnertsechsten"),
+        (707, "siwenhonnertsiwenten"),
+        (708, "siwenhonnertaachten"),
+        (709, "siwenhonnertnéngten"),
+        (710, "siwenhonnertzéngten"),
+        (711, "siwenhonnerteeleften"),
+        (800, "aachthonnertsten"),
+        (801, "aachthonnertéischten"),
+        (802, "aachthonnertzweeten"),
+        (803, "aachthonnertdrëtten"),
+        (804, "aachthonnertvéierten"),
+        (805, "aachthonnertfënneften"),
+        (806, "aachthonnertsechsten"),
+        (807, "aachthonnertsiwenten"),
+        (808, "aachthonnertaachten"),
+        (809, "aachthonnertnéngten"),
+        (810, "aachthonnertzéngten"),
+        (811, "aachthonnerteeleften"),
+        (900, "nénghonnertsten"),
+        (901, "nénghonnertéischten"),
+        (902, "nénghonnertzweeten"),
+        (903, "nénghonnertdrëtten"),
+        (904, "nénghonnertvéierten"),
+        (905, "nénghonnertfënneften"),
+        (906, "nénghonnertsechsten"),
+        (907, "nénghonnertsiwenten"),
+        (908, "nénghonnertaachten"),
+        (909, "nénghonnertnéngten"),
+        (910, "nénghonnertzéngten"),
+        (911, "nénghonnerteeleften"),
+        (1000, "eendausendsten"),
+    ]
+    for num, expected in cases:
+        assert lb.to_ordinal(num) == expected, f"Ordinal {num}: {lb.to_ordinal(num)} != {expected}"
+
+
+def test_currency():
+    lb = Num2Word_LB()
+    cases = [
+        (1, 'EUR', "een Euro"),
+        (2, 'EUR', "zwee Euro"),
+        (1.01, 'EUR', "een Euro an een Cent"),
+        (2.50, 'EUR', "zwee Euro an fofzeg Cent"),
+        (0.01, 'EUR', "een Cent"),
+        (1, 'USD', "een Dollar"),
+        (2.25, 'USD', "zwee Dollar an fënnefanzwanzeg Cent"),
+        (1, 'GBP', "een Pond"),
+        (1, 'CNY', "een Yuan"),
+        (1, 'DEM', "eng Mark"),
+    ]
+    for value, currency, expected in cases:
+        result = lb.to_currency(value, currency=currency)
+        assert expected in result, f"Currency {value} {currency}: {result} != {expected}"
+
+
+def test_percentages():
+    lb = Num2Word_LB()
+    cases = [
+        (25, "fënnefanzwanzeg Prozent"),
+        (50, "fofzeg Prozent"),
+        (75, "fënnefasiwwenzeg Prozent"),
+        (1, "een Prozent"),
+        (10, "zéng Prozent"),
+        (99, "nénganzwanzeg Prozent"),
+        (0.5, "null Komma fënnef Prozent"),
+        (100, "honnert Prozent"),
+    ]
+    for value, expected in cases:
+        result = lb.to_percentage(value)
+        assert expected in result, f"Percentage {value}: {result} != {expected}"
+
+
+def test_units():
+    lb = Num2Word_LB()
+    cases = [
+        ("-1°", "minus een Grad"),
+        ("-10°", "minus zéng Grad"),
+        ("1kg", "ee Kilogramm"),
+        ("2kg", "zwee Kilogramm"),
+        ("1ml", "een Milliliter"),
+        ("2ml", "zwee Milliliter"),
+        ("1gr", "een Gramm"),
+        ("2gr", "zwee Gramm"),
+        ("10%", "zéng Prozent"),
+        ("25%", "fënnefanzwanzeg Prozent"),
+        ("50%", "fofzeg Prozent"),
+        ("100%", "honnert Prozent"),
+        ("1970er", "nonnzénghonnertsiwenzeger"),
+        ("2000er", "zwoudausender"),
+    ]
+    for text, expected in cases:
+        result = lb.to_unit(text)
+        assert expected in result, f"Unit '{text}': {result} != {expected}"
+
+
+def test_years():
+    lb = Num2Word_LB()
+    cases = [
+        (1970, "nonnzénghonnertsiwenzeg"),
+        (2000, "zwoudausend"),
+        (2020, "zwoudausendzwanzeg"),
+        (1985, "nonnzénghonnertfënnefanzwanzeg"),
+    ]
+    for year, expected in cases:
+        result = lb.to_year(year)
+        assert expected in result, f"Year {year}: {result} != {expected}"
+
+
+def test_large_numbers():
+    lb = Num2Word_LB()
+    cases = [
+        (1000, "eendausend"),
+        (1000000, "eng Millioun"),
+        (1000000000, "eng Milliard"),
+        (2000000, "zwee Milliounen"),
+    ]
+    for num, expected in cases:
+        result = lb.to_cardinal(num)
+        assert expected in result, f"Large number {num}: {result} != {expected}"
+
+
+def test_edge_cases():
+    lb = Num2Word_LB()
+    cases = [
+        (0, "null"),
+        (-1, "minus een"),
+        (1.5, "een Komma fënnef"),
+        (-10, "minus zéng"),
+        (0.01, "null Komma een"),
+    ]
+    for num, expected in cases:
+        result = lb.to_cardinal(num)
+        assert expected in result, f"Edge case {num}: {result} != {expected}"
+
+
 def main():
     """Run all tests"""
     test_normalizer()
@@ -153,3 +369,18 @@ def main():
 
 if __name__ == "__main__":
     main()
+    print("\n=== RUNNING EXTENDED TESTS ===\n")
+    test_ordinals()
+    print("Ordinals: OK")
+    test_currency()
+    print("Currency: OK")
+    test_percentages()
+    print("Percentages: OK")
+    test_units()
+    print("Units: OK")
+    test_years()
+    print("Years: OK")
+    test_large_numbers()
+    print("Large numbers: OK")
+    test_edge_cases()
+    print("Edge cases: OK")

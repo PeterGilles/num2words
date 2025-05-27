@@ -254,7 +254,11 @@ class Num2Word_LB(Num2Word_EU):
             80: "achtzegsten",
             90: "nonzegsten",
             100: "honnertsten",
-            101: "eenhonnerteentsten",  # Special case for 101st
+            101: "eenhonnertéischten",  # Special case for 101st
+            102: "eenhonnertzweeten",
+            103: "eenhonnertdrëtten",
+            110: "eenhonnerzéngten",
+            111: "eenhonnerteeleften",
             200: "zweehonnertsten",     # Special case for 200th
             1000: "eendausendsten",     # Special case for 1000th
         }
