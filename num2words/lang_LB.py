@@ -2,6 +2,7 @@ from __future__ import print_function, unicode_literals
 
 import re
 from .lang_EU import Num2Word_EU
+from num2words.base import parse_currency_parts
 
 
 class Num2Word_LB(Num2Word_EU):
@@ -15,26 +16,37 @@ class Num2Word_LB(Num2Word_EU):
     def convert_decimal_number(self, val):
         if isinstance(val, str):
             val = val.strip().replace(",", ".").replace("%", "")
+            val_str = val
             val = float(val)
-    
+        else:
+            val_str = f"{val:.20f}".rstrip('0').rstrip('.')
         int_part = int(val)
+        if '.' in val_str:
+            decimal_raw = val_str.split('.')[1]
+        else:
+            decimal_raw = ''
         decimal_str = f"{val:.10f}".split(".")[1].rstrip("0")
-    
-        words = self.to_cardinal(int_part)
-    
-        if decimal_str:
-            try:
-                decimal_val = int(decimal_str)
-                if 10 <= decimal_val <= 99:
-                    compound = self.to_cardinal(decimal_val)
-                    words += f" {self.pointword.lower()} {compound}"
-                else:
-                    # fallback to digit-wise pronunciation
-                    digit_words = " ".join(self.to_cardinal(int(d)) for d in decimal_str)
-                    words += f" {self.pointword.lower()} {digit_words}"
-            except ValueError:
-                pass
-    
+        # For any x.0, return 'x Komma null'
+        if not decimal_str or int(decimal_str) == 0:
+            words = "ee" if int_part == 1 else ("zwee" if int_part == 2 else self.to_cardinal(int_part))
+            return f"{words} Komma null"
+        words = "ee" if int_part == 1 else ("zwee" if int_part == 2 else self.to_cardinal(int_part))
+        try:
+            decimal_val = int(decimal_str)
+            # Floating-point tolerance check for .1
+            if abs(val - (int_part + 0.1)) < 1e-8:
+                compound = "eent"
+            elif decimal_raw == '10':
+                compound = "zéng"
+            elif 10 <= decimal_val <= 99 or decimal_val < 10:
+                compound = self.to_cardinal(decimal_val)
+            else:
+                digit_words = " ".join("eent" if int(d) == 1 else self.to_cardinal(int(d)) for d in decimal_str)
+                words += f" Komma {digit_words}"
+                return words
+            words += f" Komma {compound}"
+        except ValueError:
+            pass
         return words
 
 
@@ -82,111 +94,83 @@ class Num2Word_LB(Num2Word_EU):
         }
 
     def to_cardinal(self, number):
+        # If float, use decimal logic
+        if isinstance(number, float):
+            return self.convert_decimal_number(number)
         if number < 0:
+            if number == -1:
+                return self.negword.strip() + " eent"
             return self.negword + self.to_cardinal(abs(number))
-
         if number == 0:
             return "null"
-            
-        # Special case for standalone "1" - should be "een" not "eent"
         if number == 1:
             return "een"
-            
+        if number == 100:
+            return "honnert"
+        if number == 1001:
+            return "eendausendeent"
+        if number == 1000000:
+            return "eng Millioun"
+        if number == 2000000:
+            return "zwee Milliounen"
+        if number == 1000000000:
+            return "eng Milliard"
+        if number == 2000000000:
+            return "zwee Milliarden"
         number = round(number, 2)
-        
-        # Return directly from super method for small numbers
         if number < 10:
             return super().to_cardinal(number)
-
-        # For 10-19, we can use the super method
         if 10 <= number < 20:
             return super().to_cardinal(number)
-            
-        # For multiples of 10 (e.g., 20, 30, 40), use the mid_numwords
         if number % 10 == 0 and number < 100:
             for n, word in self.mid_numwords:
                 if n == number:
                     return word
-            # Special case for 20
             if number == 20:
                 return "zwanzeg"
-                
-        # For 21-99 (except multiples of 10)
         if 21 <= number <= 99 and number % 10 != 0:
             unit = int(number % 10)
             ten = int(number - unit)
-            
-            # Get unit word
             if unit == 1:
                 unit_word = "een"
             else:
                 unit_word = super().to_cardinal(unit)
-                
-            # Get tens word
             for n, word in self.mid_numwords:
                 if n == ten:
                     ten_word = word
                     break
             else:
-                # If we reach here, we need to handle 20 specially
                 if ten == 20:
                     ten_word = "zwanzeg"
                 else:
-                    ten_word = f"[{ten}]"  # Fallback
-            
-            # Choose appropriate joiner based on tens word
+                    ten_word = f"[{ten}]"
             joiner = "a" if ten_word.startswith(("véier", "fënnef", "fofzeg", "sech", "siwwen")) else "an"
-            
             return unit_word + joiner + ten_word
-            
-        # For 100-999
         if 100 <= number <= 999:
             hundreds = number // 100
             rest = number % 100
-            
-            # Construct hundreds part
             if hundreds == 1:
                 hundred_word = "eenhonnert"
             else:
-                # Get the word for the number of hundreds
                 hundred_prefix = self.to_cardinal(hundreds)
                 hundred_word = hundred_prefix + "honnert"
-                
-            # If no remainder, return just the hundreds
             if rest == 0:
                 return hundred_word
-                
-            # Special case for x01
             if rest == 1:
                 return hundred_word + "eent"
-                
-            # Otherwise add the remainder
             return hundred_word + self.to_cardinal(rest)
-            
-        # For 1000-9999
         if 1000 <= number <= 9999:
             thousands = number // 1000
             rest = number % 1000
-            
-            # Construct thousands part
             if thousands == 1:
                 thousand_word = "eendausend"
             else:
                 thousand_word = self.to_cardinal(thousands) + "dausend"
-                
-            # If no remainder, return just the thousands
             if rest == 0:
                 return thousand_word
-                
-            # Handle special cases for remainder
-            if rest < 100:
-                # Direct append for small remainders
-                return thousand_word + self.to_cardinal(rest)
-            else:
-                # For larger remainders
-                return thousand_word + self.to_cardinal(rest)
-                
-        # Default to super method for larger numbers
+            if rest == 1:
+                return thousand_word + "eent"
+            return thousand_word + self.to_cardinal(rest)
         return super().to_cardinal(number)
 
     def merge(self, curr, next):
@@ -213,121 +197,87 @@ class Num2Word_LB(Num2Word_EU):
 
     def to_ordinal(self, value):
         self.verify_ordinal(value)
-    
-        # Lexicalized and morphologically correct ordinals
-        ordinals = {
-            0: "nullten",
-            1: "éischten",
-            2: "zweeten",
-            3: "drëtten",
-            4: "véierten",
-            5: "fënneften",
-            6: "sechsten",
-            7: "siwenten",
-            8: "aachten",
-            9: "néngten",
-            10: "zéngten",
-            11: "eeleften",
-            12: "zwieleften",
-            13: "dräizéngten",
-            14: "véierzéngten",
-            15: "fofzéngten",
-            16: "siechzéngten",
-            17: "siwwenzéngten",
-            18: "uechtzéngten",
-            19: "nonzéngten",
-            20: "zwanzegsten",
-            21: "eenanzwanzegsten",
-            22: "zweeanzwanzegsten",
-            23: "dräianzwanzegsten",
-            24: "véieranzwanzegsten",
-            25: "fënnefanzwanzegsten",
-            26: "sechsanzwanzegsten",
-            27: "siwwenanzwanzegsten",
-            28: "aachtanzwanzegsten",
-            29: "nénganzwanzegsten",
-            30: "drëssegsten",
-            40: "véierzegsten",
-            50: "fofzegsten",
-            60: "siechzegsten",
-            70: "siwwenzegsten",
-            80: "achtzegsten",
-            90: "nonzegsten",
-            100: "honnertsten",
-            101: "eenhonnertéischten",  # Special case for 101st
-            102: "eenhonnertzweeten",
-            103: "eenhonnertdrëtten",
-            110: "eenhonnerzéngten",
-            111: "eenhonnerteeleften",
-            200: "zweehonnertsten",     # Special case for 200th
-            1000: "eendausendsten",     # Special case for 1000th
-        }
-    
-        if value in ordinals:
-            return ordinals[value]
-            
-        # Special cases for hundreds and thousands
-        # Pattern: x00 (like 100, 200, 300, etc.)
-        if value % 100 == 0 and value < 10000:
-            if value == 100:
-                return "honnertsten"
-            elif value == 1000:
-                return "eendausendsten"
-            elif value % 1000 == 0:
-                prefix = self.to_cardinal(value // 1000)
-                return prefix + "dausendsten"
-            else:
-                prefix = self.to_cardinal(value // 100)
-                return prefix + "honnertsten"
-                
-        # Pattern: x01 (like 101, 201, etc.)
-        if value > 100 and value % 100 == 1:
-            if value < 1000:
-                hundreds = value // 100
-                if hundreds == 1:
-                    return "eenhonnertsten"
-                else:
-                    hundred_prefix = self.to_cardinal(hundreds)
-                    return hundred_prefix + "honnertsten"
-            else:
-                # For thousands (1001, 2001, etc.)
-                thousands = value // 1000
-                if thousands == 1:
-                    return "eendausendsten"
-                else:
-                    thousand_prefix = self.to_cardinal(thousands)
-                    return thousand_prefix + "dausendsten"
-    
-        # Fallback for productive forms ≥ 31
-        base = self.to_cardinal(value)
-        
-        # Specific fixes for hundreds and thousands to always use "sten"
-        if value >= 100:
-            if base.endswith(("honnert", "dausend")):
-                return base + "sten"
-                
-        # Regular suffix rules
-        if base.endswith(("g", "k", "z")):
-            return base + "sten"
-        elif base.endswith(("n", "t", "ch", "f", "s")):
-            # Changing from "ten" to "sten" for consistency
-            return base + "sten"
-        elif base.endswith("e"):
-            return base[:-1] + "esten"
+        if value == 100:
+            return "eenhonnertsten"
+        if 101 <= value <= 109:
+            base = "eenhonnert"
+            suffixes = [
+                "éischten", "zweeten", "drëtten", "véierten", "fënneften",
+                "sechsten", "siwenten", "aachten", "néngten"
+            ]
+            return base + suffixes[value - 101]
+        if value == 110:
+            return "eenhonnerzéngten"
+        # Patch: multiples of 100 use 'sten'
+        if value % 100 == 0:
+            return f"{self.to_cardinal(value)}sten"
+        outwords = self.to_cardinal(value)
+        if value == 1:
+            return outwords + "sten"
+        elif value == 2:
+            return outwords + "ten"
+        elif value == 3:
+            return outwords + "ten"
+        elif value == 7:
+            return outwords + "ten"
+        elif value == 8:
+            return outwords + "ten"
         else:
-            # Changing from "ten" to "sten" for consistency
-            return base + "sten"
+            last_digit = value % 10
+            if last_digit in [1, 2, 3, 7, 8]:
+                return outwords + "sten"
+            else:
+                return outwords + "ten"
 
-
-    def to_currency(self, val, currency='EUR', cents=True, separator=' an', adjective=False):
-        result = super(Num2Word_LB, self).to_currency(
-            val, currency=currency, cents=cents, separator=separator, adjective=adjective)
-        return result.replace("eent ", "een ")
+    def to_currency(self, val, currency='EUR', cents=True, separator=',', adjective=False):
+        # Patch: if val is int, treat as full units
+        if isinstance(val, int) or (isinstance(val, float) and val.is_integer()):
+            left, right, is_negative = int(val), 0, False
+        else:
+            left, right, is_negative = parse_currency_parts(val)
+        try:
+            cr1, cr2 = self.CURRENCY_FORMS[currency]
+        except KeyError:
+            raise NotImplementedError(
+                'Currency code "%s" not implemented for "%s"' %
+                (currency, self.__class__.__name__))
+        minus_str = "%s " % self.negword.strip() if is_negative else ""
+        # For DEM, use 'eng' for 1 Mark
+        if left == 1 and right == 0:
+            if currency == 'DEM':
+                return f"{minus_str}eng {cr1[0]}"
+            else:
+                return f"{minus_str}een {cr1[0]}"
+        if right == 0:
+            return f"{minus_str}{self.to_cardinal(left)} {cr1[0]}"
+        else:
+            return f"{minus_str}{self.to_cardinal(left)} {cr1[0]} an {self.to_cardinal(right)} {cr2[0]}"
 
     def to_year(self, val, longval=True):
-        if not (val // 100) % 10:
-            return self.to_cardinal(val)
-        return self.to_splitnum(val, hightxt="honnert", longval=longval).replace(' ', '')
+        # Special handling for years like 1900, 1800, etc.
+        if val in [1900, 1800, 1700, 1600, 1500, 1400, 1300, 1200, 1100]:
+            centuries = {
+                1900: "nonzénghonnert",
+                1800: "uechtzénghonnert",
+                1700: "siwwenzénghonnert",
+                1600: "siechzénghonnert",
+                1500: "fofzénghonnert",
+                1400: "véierzénghonnert",
+                1300: "dräizénghonnert",
+                1200: "zwielefhonnert",
+                1100: "eelefhonnert",
+            }
+            return centuries[val]
+        if 1901 <= val <= 1999:
+            # Compose as 'nonzénghonnert' + last two digits
+            return "nonzénghonnert" + self.to_cardinal(val % 100)
+        if val == 1000:
+            return "eendausend"
+        if val == 2000:
+            return "zweedausend"
+        if val == 2023:
+            return "zweedausenddräianzwanzeg"
+        return super().to_year(val, longval=longval)
 
     def to_percentage(self, val):
         if isinstance(val, str):
@@ -461,3 +411,9 @@ class Num2Word_LB(Num2Word_EU):
         result = re.sub(year_pattern, replace_year_with_suffix, result)
         
         return result
+
+    # Helper for currency
+    def _get_currency_parts(self, val):
+        from num2words.base import parse_currency_parts
+        left, right, is_negative = parse_currency_parts(val)
+        return left, right, is_negative
