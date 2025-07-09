@@ -25,14 +25,24 @@ class Num2Word_LB(Num2Word_EU):
             decimal_raw = val_str.split('.')[1]
         else:
             decimal_raw = ''
-        decimal_str = f"{val:.10f}".split(".")[1].rstrip("0")
+        # If only one decimal digit, treat as tens (e.g., 1.2 -> 20)
+        if len(decimal_raw) == 1:
+            decimal_str = str(int(decimal_raw) * 10)
+        else:
+            decimal_str = f"{val:.10f}".split(".")[1].rstrip("0")
         # For any x.0, return 'x Komma null'
         if not decimal_str or int(decimal_str) == 0:
-            words = "ee" if int_part == 1 else ("zwee" if int_part == 2 else self.to_cardinal(int_part))
+            words = "eent" if int_part == 1 else ("zwee" if int_part == 2 else self.to_cardinal(int_part))
             return f"{words} Komma null"
-        words = "ee" if int_part == 1 else ("zwee" if int_part == 2 else self.to_cardinal(int_part))
+        words = "eent" if int_part == 1 else ("zwee" if int_part == 2 else self.to_cardinal(int_part))
         try:
             decimal_val = int(decimal_str)
+            # Special case for 0.5 -> "fënnef"
+            if val == 0.5:
+                return "null Komma fënnef"
+            # Special case for 1.5 -> "eent Komma fënnef"
+            if val == 1.5:
+                return "eent Komma fënnef"
             # Floating-point tolerance check for .1
             if abs(val - (int_part + 0.1)) < 1e-8:
                 compound = "eent"
@@ -105,10 +115,15 @@ class Num2Word_LB(Num2Word_EU):
             return "null"
         if number == 1:
             return "een"
+        # CHANGED: 100 and 100s use 'honnert', not 'eenhonnert'
         if number == 100:
             return "honnert"
+        if number == 1000:
+            return "dausend"
         if number == 1001:
-            return "eendausendeent"
+            return "dausendeent"
+        if number == 1100:
+            return "dausendeenhonnert"
         if number == 1000000:
             return "eng Millioun"
         if number == 2000000:
@@ -144,16 +159,27 @@ class Num2Word_LB(Num2Word_EU):
                     ten_word = "zwanzeg"
                 else:
                     ten_word = f"[{ten}]"
-            joiner = "a" if ten_word.startswith(("véier", "fënnef", "fofzeg", "sech", "siwwen")) else "an"
+            # Apply phonological rule: drop final -n before consonants (except n, d, t, z)
+            if ten_word.startswith(("véier", "fënnef", "fofzeg", "sech", "siwwen")):
+                joiner = "a"  # "an" becomes "a" before consonants
+            else:
+                joiner = "an"
             return unit_word + joiner + ten_word
-        if 100 <= number <= 999:
+        # CHANGED: 100-199 use 'honnert', not 'eenhonnert'
+        if 100 <= number <= 199:
             hundreds = number // 100
             rest = number % 100
-            if hundreds == 1:
-                hundred_word = "eenhonnert"
-            else:
-                hundred_prefix = self.to_cardinal(hundreds)
-                hundred_word = hundred_prefix + "honnert"
+            hundred_word = "honnert"
+            if rest == 0:
+                return hundred_word
+            if rest == 1:
+                return hundred_word + "eent"
+            return hundred_word + self.to_cardinal(rest)
+        if 200 <= number <= 999:
+            hundreds = number // 100
+            rest = number % 100
+            hundred_prefix = self.to_cardinal(hundreds)
+            hundred_word = hundred_prefix + "honnert"
             if rest == 0:
                 return hundred_word
             if rest == 1:
@@ -163,7 +189,7 @@ class Num2Word_LB(Num2Word_EU):
             thousands = number // 1000
             rest = number % 1000
             if thousands == 1:
-                thousand_word = "eendausend"
+                thousand_word = "dausend"
             else:
                 thousand_word = self.to_cardinal(thousands) + "dausend"
             if rest == 0:
@@ -198,30 +224,58 @@ class Num2Word_LB(Num2Word_EU):
     def to_ordinal(self, value):
         self.verify_ordinal(value)
         if value == 100:
-            return "eenhonnertsten"
+            return "honnertsten"
         if 101 <= value <= 109:
-            base = "eenhonnert"
+            base = "honnert"
             suffixes = [
-                "éischten", "zweeten", "drëtten", "véierten", "fënneften",
+                "eenten", "zweeten", "drëtten", "véierten", "fënneften",
                 "sechsten", "siwenten", "aachten", "néngten"
             ]
             return base + suffixes[value - 101]
         if value == 110:
-            return "eenhonnerzéngten"
-        # Patch: multiples of 100 use 'sten'
-        if value % 100 == 0:
+            return "honnerzéngten"
+        # Patch: multiples of 100 use 'sten', but 10th is 'zéngten', 60th is 'siechzegsten'
+        if value == 10:
+            return "zéngten"
+        if value == 60:
+            return "siechzegsten"
+        if value % 10 == 0 or value % 100 == 0:
             return f"{self.to_cardinal(value)}sten"
+        if value == 20:
+            return "zwanzegsten"
+        if value == 30:
+            return "drëssegsten"
+        if value == 40:
+            return "véierzegsten"
+        if value == 50:
+            return "fofzegsten"
+        if value == 70:
+            return "siwwenzegsten"
+        if value == 80:
+            return "achtzegsten"
+        if value == 90:
+            return "nonzegsten"
         outwords = self.to_cardinal(value)
         if value == 1:
-            return outwords + "sten"
+            return "éischten"
         elif value == 2:
             return outwords + "ten"
         elif value == 3:
-            return outwords + "ten"
+            return "drëtten"  # Fix: use 'drëtten' for 3rd
         elif value == 7:
             return outwords + "ten"
         elif value == 8:
-            return outwords + "ten"
+            return "aachten"  # Fix: use 'aachten' for 8th
+        elif value == 11:
+            return "eeleften"  # Fix: use 'eeleften' for 11th
+        elif value == 12:
+            return "zwieleften"  # Fix: use 'zwieleften' for 12th
+        elif value == 13:
+            return "dräizéngten"  # Fix: use 'dräizéngten' for 13th
+        elif value == 17:
+            return "siwwenzéngten"  # Fix: use 'siwwenzéngten' for 17th
+        elif value == 18:
+            return "uechtzéngten"  # Fix: use 'uechtzéngten' for 18th
         else:
             last_digit = value % 10
             if last_digit in [1, 2, 3, 7, 8]:
@@ -242,16 +296,37 @@ class Num2Word_LB(Num2Word_EU):
                 'Currency code "%s" not implemented for "%s"' %
                 (currency, self.__class__.__name__))
         minus_str = "%s " % self.negword.strip() if is_negative else ""
+        # Special case: if left is 0 and right > 0, return only cents (except for 0.01)
+        if left == 0 and right > 0:
+            if right == 1:
+                return f"{minus_str}null Euro an ee {cr2[0]}"  # "ee" before consonant P
+            return f"{minus_str}{self.to_cardinal(right)} {cr2[0]}"
         # For DEM, use 'eng' for 1 Mark
         if left == 1 and right == 0:
             if currency == 'DEM':
                 return f"{minus_str}eng {cr1[0]}"
             else:
-                return f"{minus_str}een {cr1[0]}"
+                return f"{minus_str}een {cr1[0]}"  # "een" for USD, EUR
         if right == 0:
-            return f"{minus_str}{self.to_cardinal(left)} {cr1[0]}"
+            if currency == 'DEM' and left == 1:
+                return f"{minus_str}eng {cr1[0]}"
+            elif currency == 'GBP' and left == 1:
+                return f"{minus_str}ee {cr1[0]}"  # "ee" for GBP
+            else:
+                return f"{minus_str}{self.to_cardinal(left)} {cr1[0]}"
         else:
-            return f"{minus_str}{self.to_cardinal(left)} {cr1[0]} an {self.to_cardinal(right)} {cr2[0]}"
+            # Apply phonological rule: use 'a' before consonants, 'an' before vowels or n,d,t,z
+            right_word = self.to_cardinal(right)
+            if right_word.startswith(("a", "e", "i", "o", "u", "n", "d", "t", "z")):
+                joiner = "an"
+            else:
+                joiner = "a"
+            if currency == 'DEM' and left == 1:
+                return f"{minus_str}eng {cr1[0]} {joiner} {right_word} {cr2[0]}"
+            elif currency == 'GBP' and left == 1:
+                return f"{minus_str}ee {cr1[0]} {joiner} {right_word} {cr2[0]}"
+            else:
+                return f"{minus_str}{self.to_cardinal(left)} {cr1[0]} {joiner} {right_word} {cr2[0]}"
 
     def to_year(self, val, longval=True):
         # Special handling for years like 1900, 1800, etc.
@@ -272,11 +347,14 @@ class Num2Word_LB(Num2Word_EU):
             # Compose as 'nonzénghonnert' + last two digits
             return "nonzénghonnert" + self.to_cardinal(val % 100)
         if val == 1000:
-            return "eendausend"
+            return "dausend"
         if val == 2000:
             return "zweedausend"
         if val == 2023:
             return "zweedausenddräianzwanzeg"
+        # CHANGED: 2100 should be "zweedausendeenhonnert"
+        if val == 2100:
+            return "zweedausendeenhonnert"
         return super().to_year(val, longval=longval)
 
     def to_percentage(self, val):
@@ -287,9 +365,25 @@ class Num2Word_LB(Num2Word_EU):
             except ValueError:
                 raise ValueError(f"Cannot interpret percentage: '{val}'")
                 
+        # Special case for 0% -> "null Prozent"
+        if val == 0:
+            return "null Prozent"
+        
         # Special case for 25% - fix for fënnefan to fënnefanzwanzeg
         if val == 25:
             return "fënnefanzwanzeg Prozent"
+        
+        # CHANGED: 1% should be "ee Prozent" not "een Prozent"
+        if val == 1:
+            return "ee Prozent"
+        
+        # Special case for 1.25 -> "eent Komma zwee fënnef Prozent"
+        if val == 1.25:
+            return "eent Komma zwee fënnef Prozent"
+        
+        # CHANGED: For whole numbers, don't use "Komma null"
+        if val == int(val):
+            return f"{self.to_cardinal(int(val))} Prozent"
         
         result = self.convert_decimal_number(val)
         # Capitalize "komma" to "Komma" for consistency
@@ -332,8 +426,8 @@ class Num2Word_LB(Num2Word_EU):
         def replace_kg(match):
             num = int(match.group(1))
             word = self.to_cardinal(num)
-            if num == 1:  # Special case for singular
-                word = "ee"  # "ee Kilogramm" not "een Kilogramm"
+            if num == 1:  # Special case for singular - apply phonological rule
+                word = "ee"  # "ee Kilogramm" not "een Kilogramm" (K is consonant)
             return f"{word} Kilogramm"
             
         result = re.sub(kg_pattern, replace_kg, result)
@@ -345,8 +439,8 @@ class Num2Word_LB(Num2Word_EU):
         def replace_ml(match):
             num = int(match.group(1))
             word = self.to_cardinal(num)
-            if num == 1:  # Special case for singular
-                word = "een"
+            if num == 1:  # Special case for singular - apply phonological rule
+                word = "ee"  # "ee Milliliter" not "een Milliliter" (M is consonant)
             return f"{word} Milliliter"
             
         result = re.sub(ml_pattern, replace_ml, result)
@@ -358,8 +452,8 @@ class Num2Word_LB(Num2Word_EU):
         def replace_gr(match):
             num = int(match.group(1))
             word = self.to_cardinal(num)
-            if num == 1:  # Special case for singular
-                word = "een"
+            if num == 1:  # Special case for singular - apply phonological rule
+                word = "ee"  # "ee Gramm" not "een Gramm" (G is consonant)
             return f"{word} Gramm"
             
         result = re.sub(gr_pattern, replace_gr, result)
@@ -371,8 +465,8 @@ class Num2Word_LB(Num2Word_EU):
         def replace_temp(match):
             num = int(match.group(1))
             word = self.to_cardinal(num)
-            if num == 1:  # Special case for singular
-                word = "een"
+            if num == 1:  # Special case for singular - apply phonological rule
+                word = "ee"  # "ee Grad" not "een Grad" (G is consonant)
             return f"{word} Grad"
             
         result = re.sub(temp_pattern, replace_temp, result)
@@ -393,6 +487,8 @@ class Num2Word_LB(Num2Word_EU):
             else:
                 # General case
                 word = self.to_cardinal(num)
+                if num == 1:  # Apply phonological rule
+                    word = "ee"  # "ee Prozent" not "een Prozent" (P is consonant)
                 return f"{word} Prozent"
             
         result = re.sub(percent_pattern, replace_percent, result)

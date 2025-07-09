@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 """
+Use this version here: 
+https://github.com/PeterGilles/num2words
+
 Test script for advanced Luxembourgish number conversion
 Includes special cases like:
 - Years with 'er' suffix (e.g., '1970er')
