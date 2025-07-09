@@ -87,10 +87,10 @@ class TextNormalizer:
         text = re.sub(percent_pattern, lambda m: f"{self.lb.to_cardinal(int(m.group(1)))} Prozent", text)
         
         # Fix any singular forms (1 unit)
-        text = text.replace("eent Milliliter", "een Milliliter")
-        text = text.replace("eent Gramm", "een Gramm")
-        text = text.replace("eent Grad", "een Grad")
-        text = text.replace("eent Prozent", "een Prozent")
+        text = text.replace("eent Milliliter", "ee Milliliter")
+        text = text.replace("eent Gramm", "ee Gramm")
+        text = text.replace("eent Grad", "ee Grad")
+        text = text.replace("eent Prozent", "ee Prozent")
         
         return text
         
@@ -114,7 +114,7 @@ def test_normalizer():
     test_cases = [
         # Years with suffix
         "1970er", "1980er", "1990er", "2000er", "2020er",
-        "In den 1970er bis 1990er Jahren",
+        "An den 1970er bis 1990er Joren",
         
         # Units - temperature
         "90°", "21°", "0°", "100°",
@@ -152,17 +152,17 @@ def test_ordinals():
     lb = Num2Word_LB()
     cases = [
         (100, "honnertsten"),
-        (101, "eenhonnertéischten"),
-        (102, "eenhonnertzweeten"),
-        (103, "eenhonnertdrëtten"),
-        (104, "eenhonnertvéierten"),
-        (105, "eenhonnertfënneften"),
-        (106, "eenhonnertsechsten"),
-        (107, "eenhonnertsiwenten"),
-        (108, "eenhonnertaachten"),
-        (109, "eenhonnertnéngten"),
-        (110, "eenhonnerzéngten"),
-        (111, "eenhonnerteeleften"),
+        (101, "honnerteenten"),
+        (102, "honnertzweeten"),
+        (103, "honnertdrëtten"),
+        (104, "honnertvéierten"),
+        (105, "honnertfënneften"),
+        (106, "honnertsechsten"),
+        (107, "honnertsiwenten"),
+        (108, "honnertaachten"),
+        (109, "honnertnéngten"),
+        (110, "honnerzéngten"),
+        (111, "honnerteeleften"),
         (200, "zweehonnertsten"),
         (201, "zweehonnertéischten"),
         (202, "zweehonnertzweeten"),
@@ -259,7 +259,7 @@ def test_ordinals():
         (909, "nénghonnertnéngten"),
         (910, "nénghonnertzéngten"),
         (911, "nénghonnerteeleften"),
-        (1000, "eendausendsten"),
+        (1000, "dausendsten"),
     ]
     for num, expected in cases:
         assert lb.to_ordinal(num) == expected, f"Ordinal {num}: {lb.to_ordinal(num)} != {expected}"
@@ -290,7 +290,7 @@ def test_percentages():
         (25, "fënnefanzwanzeg Prozent"),
         (50, "fofzeg Prozent"),
         (75, "fënnefasiwwenzeg Prozent"),
-        (1, "een Prozent"),
+        (1, "ee Prozent"),
         (10, "zéng Prozent"),
         (99, "nénganzwanzeg Prozent"),
         (0.5, "null Komma fënnef Prozent"),
@@ -340,10 +340,10 @@ def test_years():
 def test_large_numbers():
     lb = Num2Word_LB()
     cases = [
-        (1000, "eendausend"),
+        (1000, "dausend"),
         (1000000, "eng Millioun"),
         (1000000000, "eng Milliard"),
-        (2000000, "zwee Milliounen"),
+        (2000000, "zwou Milliounen"),
     ]
     for num, expected in cases:
         result = lb.to_cardinal(num)

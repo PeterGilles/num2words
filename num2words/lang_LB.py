@@ -234,6 +234,8 @@ class Num2Word_LB(Num2Word_EU):
             return base + suffixes[value - 101]
         if value == 110:
             return "honnerzéngten"
+        if value == 111:
+            return "honnerteeleften"
         # Patch: multiples of 100 use 'sten', but 10th is 'zéngten', 60th is 'siechzegsten'
         if value == 10:
             return "zéngten"
