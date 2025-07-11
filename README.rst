@@ -93,42 +93,98 @@ The Luxembourgish normalizer script (`luxembourgish_normalizer.py`) recognizes a
 
 1. **Numbers and Large Numbers**
    - Recognizes: Standalone numbers, numbers with spaces or dots as thousand separators, numbers with decimals (dot or comma)
-   - Converts: All numbers to their full Luxembourgish word form, e.g. ``42`` → ``zweeavéierzeg``, ``40 000`` → ``véierzegdausend``, ``24,120.35`` or ``24.120,35`` → ``véieranzwanzegdausendhonnertzwanzeg Komma fënnefandrësseg``
+   - Converts: All numbers to their full Luxembourgish word form
+   - Examples:
+     - ``42`` → ``zweeavéierzeg``
+     - ``1 234`` → ``dausendzweehonnertvéierandrësseg``
+     - ``40 000`` → ``véierzegdausend``
+     - ``24,120.35`` → ``véieranzwanzegdausendhonnertzwanzeg Komma fënnefandrësseg``
+     - ``24.120,35`` → ``véieranzwanzegdausendhonnertzwanzeg Komma fënnefandrësseg``
+     - ``1.234,56`` → ``dausendzweehonnertvéierandrësseg Komma sechsafofzeg``
 
 2. **Dates and Ordinals**
-   - Recognizes: Full dates (e.g. ``30. Abrëll 2010``), numeric dates (e.g. ``22.3.``), ordinals with dot (e.g. ``9. Plaz``)
+   - Recognizes: Full dates, numeric dates, ordinals with dot
    - Converts: Dates to Luxembourgish with correct ordinal and month, ordinals to correct form before nouns
+   - Examples:
+     - ``30. Abrëll 2010`` → ``drëssegsten Abrëll zweedausendzéng``
+     - ``22.3.`` → ``zweeanzwanzegste Mäerz``
+     - ``9. Plaz`` → ``néngte Plaz``
+     - ``den 1. Juni`` → ``den éischte Juni``
+     - ``de 4. Juni`` → ``de véierte Juni``
 
 3. **Times**
-   - Recognizes: Times in ``HH:MM``, ``HHhMM``, or ``HH.MM`` format (e.g. ``10:34``, ``10h34``, ``17.40``)
+   - Recognizes: Times in ``HH:MM``, ``HHhMM``, or ``HH.MM`` format
    - Converts: To ``[hour] Auer [minute]`` in Luxembourgish, only for valid times (hours 0–24, minutes 0–59)
+   - Examples:
+     - ``10:34`` → ``zéng Auer véierandrësseg``
+     - ``10h34`` → ``zéng Auer véierandrësseg``
+     - ``17.40`` → ``siwwenzéng Auer véierzeg``
+     - ``8:15`` → ``aacht Auer fofzéng``
 
 4. **Match Results**
-   - Recognizes: Sports scores in ``X:Y`` or ``X-Y`` format (e.g. ``1:1``, ``71:56``)
-   - Converts: To ``[score1] zu [score2]`` using correct Luxembourgish number words (e.g. ``eent zu eent``, ``eenasiwwenzeg zu sechsafofzeg``)
+   - Recognizes: Sports scores in ``X:Y`` or ``X-Y`` format
+   - Converts: To ``[score1] zu [score2]`` using correct Luxembourgish number words
+   - Examples:
+     - ``1:1`` → ``eent zu eent``
+     - ``2:0`` → ``zwee zu null``
+     - ``71:56`` → ``eenasiwwenzeg zu sechsafofzeg``
+     - ``3-2`` → ``dräi zu zwee``
 
 5. **Percentages**
-   - Recognizes: Numbers followed by ``%`` (e.g. ``25%``, ``93,9%``)
-   - Converts: To ``[number] Prozent`` with correct decimal handling (e.g. ``dräiannonzeg Komma néng Prozent``)
+   - Recognizes: Numbers followed by ``%`` (with or without space)
+   - Converts: To ``[number] Prozent`` with correct decimal handling
+   - Examples:
+     - ``25%`` → ``fënnefanzwanzeg Prozent``
+     - ``93,9%`` → ``dräiannonzeg Komma néng Prozent``
+     - ``50 %`` → ``fofzeg Prozent``
+     - ``1,25%`` → ``eent Komma fënnefanzwanzeg Prozent``
 
 6. **Units and Measurements**
-   - Recognizes: Numbers with units (e.g. ``90°``, ``50 kg``, ``100 ml``, ``60 km``, ``2 Stonnen``)
-   - Converts: To full Luxembourgish with correct unit and number form, including feminine forms (e.g. ``zwou Stonnen``)
+   - Recognizes: Numbers with units (temperature, volume, weight, distance, time)
+   - Converts: To full Luxembourgish with correct unit and number form, including feminine forms
+   - Examples:
+     - ``90°`` → ``nonzeg Grad``
+     - ``50 kg`` → ``fofzeg Kilogramm``
+     - ``100 ml`` → ``honnert Milliliter``
+     - ``60 km`` → ``sechzeg Kilometer``
+     - ``2 Stonnen`` → ``zwou Stonnen``
+     - ``1ml`` → ``ee Milliliter``
+     - ``500 gr`` → ``fënnefhonnert Gramm``
 
 7. **Phone Numbers**
    - Recognizes: Lines containing ``Telefon``, ``Tel``, or ``Phone`` with digit groups
-   - Converts: Each digit to word, always including ``null`` for zeros and leading zeros (e.g. ``08`` → ``null aacht``)
+   - Converts: Each digit to word, always including ``null`` for zeros and leading zeros
+   - Examples:
+     - ``Tel: 08 123 456`` → ``Tel: null aacht eent zwee dräi véier fënnef sechs``
+     - ``Telefon: 352 123 456`` → ``Telefon: dräi fënnef zwee eent zwee dräi véier fënnef sechs``
 
 8. **Abbreviations**
-   - Recognizes: 2+ consecutive uppercase letters (e.g. ``VW``, ``CSV``, ``FIFA``)
-   - Converts: To Luxembourgish letter pronunciation (e.g. ``FAUWEE``), or as a word if in a custom dictionary (e.g. ``FIFA``)
+   - Recognizes: 2+ consecutive uppercase letters
+   - Converts: To Luxembourgish letter pronunciation, or as a word if in custom dictionary
+   - Examples:
+     - ``VW`` → ``FAUWEE``
+     - ``CSV`` → ``ZEEÄSSFAU``
+     - ``FIFA`` → ``FIFA`` (custom dictionary word)
+     - ``NATO`` → ``NATO`` (custom dictionary word)
 
 9. **Years with Suffixes**
-   - Recognizes: Decades like ``1970er``
-   - Converts: To full Luxembourgish decade form (e.g. ``nonzénghonnertsiwwenzénger``)
+   - Recognizes: Decades like ``1970er``, ``80er``
+   - Converts: To full Luxembourgish decade form
+   - Examples:
+     - ``1970er`` → ``nonzénghonnertsiwwenzeger``
+     - ``1980er`` → ``nonzénghonnertachtzeger``
+     - ``80er`` → ``achtzeger``
+     - ``an den 1970er Joren`` → ``an den nonzénghonnertsiwwenzeger Joren``
 
 10. **Currency**
-    - Recognizes: Numbers with currency codes (e.g. ``1,50 EUR``)
-    - Converts: To full Luxembourgish currency form (e.g. ``eent Euro a fofzeg Cent``), with correct grammar
+    - Recognizes: Numbers with currency codes or symbols (EUR, €, USD, $, GBP, £, etc.)
+    - Converts: To full Luxembourgish currency form with correct grammar
+    - Examples:
+      - ``1,50 EUR`` → ``een Euro a fofzeg Cent``
+      - ``1,50€`` → ``een Euro a fofzeg Cent``
+      - ``1.50 EUR`` → ``een Euro a fofzeg Cent``
+      - ``2,25 USD`` → ``zwee Dollar a fënnefanzwanzeg Cent``
+      - ``1,01 GBP`` → ``ee Pond an ee Penny``
+      - ``huet 1,50 EUR kritt`` → ``huet een Euro a fofzeg Cent kritt``
 
-Each normalization type is context-aware and applies Luxembourgish grammar and phonological rules for natural, correct output.
+Each normalization type is context-aware and applies Luxembourgish grammar and phonological rules for natural, correct output. The normalizer handles both European-style (comma as decimal) and English-style (dot as decimal) number formats.
