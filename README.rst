@@ -125,7 +125,7 @@ The Luxembourgish normalizer script (`luxembourgish_normalizer.py`) recognizes a
 
 9. **Years with Suffixes**
    - Recognizes: Decades like ``1970er``
-   - Converts: To full Luxembourgish decade form (e.g. ``nonzéngdausendsiwwenzénger``)
+   - Converts: To full Luxembourgish decade form (e.g. ``nonzénghonnertsiwwenzénger``)
 
 10. **Currency**
     - Recognizes: Numbers with currency codes (e.g. ``1,50 EUR``)
