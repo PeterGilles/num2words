@@ -197,6 +197,16 @@ class Num2Word_LB(Num2Word_EU):
             if rest == 1:
                 return thousand_word + "eent"
             return thousand_word + self.to_cardinal(rest)
+        if 10000 <= number <= 99999:
+            # Correctly handle 5-digit numbers like 19.565 as 19 dausend + 565
+            thousands = number // 1000
+            rest = number % 1000
+            thousand_word = self.to_cardinal(thousands) + "dausend"
+            if rest == 0:
+                return thousand_word
+            if rest == 1:
+                return thousand_word + "eent"
+            return thousand_word + self.to_cardinal(rest)
         return super().to_cardinal(number)
 
     def merge(self, curr, next):
