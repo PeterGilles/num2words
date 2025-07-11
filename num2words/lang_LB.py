@@ -10,51 +10,46 @@ class Num2Word_LB(Num2Word_EU):
     def str_to_number(self, value):
         from decimal import Decimal
         if isinstance(value, str):
-            value = value.replace(",", ".").strip()
+            value = value.replace(",", ".").replace("%", "").strip()
         return Decimal(value)
 
     def convert_decimal_number(self, val):
         if isinstance(val, str):
-            val = val.strip().replace(",", ".").replace("%", "")
+            # Handle comma as thousand separator, not decimal separator
+            val = val.strip().replace(",", "").replace("%", "")
             val_str = val
             val = float(val)
         else:
-            val_str = f"{val:.20f}".rstrip('0').rstrip('.')
+            # For float inputs, use a more precise method
+            val_str = f"{val:.10f}".rstrip('0').rstrip('.')
         int_part = int(val)
         if '.' in val_str:
             decimal_raw = val_str.split('.')[1]
         else:
             decimal_raw = ''
-        # If only one decimal digit, treat as tens (e.g., 1.2 -> 20)
-        if len(decimal_raw) == 1:
-            decimal_str = str(int(decimal_raw) * 10)
-        else:
-            decimal_str = f"{val:.10f}".split(".")[1].rstrip("0")
         # For any x.0, return 'x Komma null'
-        if not decimal_str or int(decimal_str) == 0:
+        if not decimal_raw or int(decimal_raw) == 0:
             words = "eent" if int_part == 1 else ("zwee" if int_part == 2 else self.to_cardinal(int_part))
             return f"{words} Komma null"
         words = "eent" if int_part == 1 else ("zwee" if int_part == 2 else self.to_cardinal(int_part))
         try:
-            decimal_val = int(decimal_str)
-            # Special case for 0.5 -> "fënnef"
-            if val == 0.5:
-                return "null Komma fënnef"
-            # Special case for 1.5 -> "eent Komma fënnef"
-            if val == 1.5:
-                return "eent Komma fënnef"
-            # Floating-point tolerance check for .1
-            if abs(val - (int_part + 0.1)) < 1e-8:
-                compound = "eent"
-            elif decimal_raw == '10':
-                compound = "zéng"
-            elif 10 <= decimal_val <= 99 or decimal_val < 10:
-                compound = self.to_cardinal(decimal_val)
-            else:
-                digit_words = " ".join("eent" if int(d) == 1 else self.to_cardinal(int(d)) for d in decimal_str)
-                words += f" Komma {digit_words}"
+            # Check if we have exactly one digit after decimal point
+            if len(decimal_raw) == 1:
+                # Single digit after comma - treat as individual digit
+                digit = int(decimal_raw)
+                digit_word = "eent" if digit == 1 else self.to_cardinal(digit)
+                words += f" Komma {digit_word}"
                 return words
-            words += f" Komma {compound}"
+            # If exactly two digits, treat as a two-digit number
+            if len(decimal_raw) == 2:
+                decimal_val = int(decimal_raw)
+                compound = self.to_cardinal(decimal_val)
+                words += f" Komma {compound}"
+                return words
+            # For longer decimals, spell out each digit
+            digit_words = " ".join("eent" if int(d) == 1 else self.to_cardinal(int(d)) for d in decimal_raw)
+            words += f" Komma {digit_words}"
+            return words
         except ValueError:
             pass
         return words
@@ -104,6 +99,9 @@ class Num2Word_LB(Num2Word_EU):
         }
 
     def to_cardinal(self, number):
+        # Handle string inputs
+        if isinstance(number, str):
+            return self.convert_decimal_number(number)
         # If float, use decimal logic
         if isinstance(number, float):
             return self.convert_decimal_number(number)
@@ -115,6 +113,42 @@ class Num2Word_LB(Num2Word_EU):
             return "null"
         if number == 1:
             return "een"
+        if number == 2:
+            return "zwee"
+        if number == 3:
+            return "dräi"
+        if number == 4:
+            return "véier"
+        if number == 5:
+            return "fënnef"
+        if number == 6:
+            return "sechs"
+        if number == 7:
+            return "siwen"
+        if number == 8:
+            return "aacht"
+        if number == 9:
+            return "néng"
+        if number == 10:
+            return "zéng"
+        if number == 11:
+            return "eelef"
+        if number == 12:
+            return "zwielef"
+        if number == 13:
+            return "dräizéngten"
+        if number == 14:
+            return "véierzéng"
+        if number == 15:
+            return "fofzéng"
+        if number == 16:
+            return "siechzéng"
+        if number == 17:
+            return "siwwenzéng"
+        if number == 18:
+            return "uechtzéng"
+        if number == 19:
+            return "nonzéng"
         # CHANGED: 100 and 100s use 'honnert', not 'eenhonnert'
         if number == 100:
             return "honnert"
@@ -243,9 +277,11 @@ class Num2Word_LB(Num2Word_EU):
             ]
             return base + suffixes[value - 101]
         if value == 110:
-            return "honnerzéngten"
+            return "honnertzéngten"
         if value == 111:
             return "honnerteeleften"
+        if value == 1001:
+            return "dausendéischten"
         # Patch: multiples of 100 use 'sten', but 10th is 'zéngten', 60th is 'siechzegsten'
         if value == 10:
             return "zéngten"
@@ -371,36 +407,26 @@ class Num2Word_LB(Num2Word_EU):
 
     def to_percentage(self, val):
         if isinstance(val, str):
-            val = val.strip().replace(",", ".").replace("%", "")
-            try:
-                val = float(val)
-            except ValueError:
-                raise ValueError(f"Cannot interpret percentage: '{val}'")
-                
+            val = val.strip().replace("%", "")
+            # Always treat as string for decimal handling
+            return self.convert_decimal_number(val) + " Prozent"
         # Special case for 0% -> "null Prozent"
         if val == 0:
             return "null Prozent"
-        
         # Special case for 25% - fix for fënnefan to fënnefanzwanzeg
         if val == 25:
             return "fënnefanzwanzeg Prozent"
-        
         # CHANGED: 1% should be "ee Prozent" not "een Prozent"
         if val == 1:
             return "ee Prozent"
-        
         # Special case for 1.25 -> "eent Komma zwee fënnef Prozent"
         if val == 1.25:
             return "eent Komma zwee fënnef Prozent"
-        
         # CHANGED: For whole numbers, don't use "Komma null"
         if val == int(val):
             return f"{self.to_cardinal(int(val))} Prozent"
-        
         result = self.convert_decimal_number(val)
-        # Capitalize "komma" to "Komma" for consistency
         result = result.replace("komma", "Komma")
-        
         return result + " Prozent"
         
     def to_unit(self, text):

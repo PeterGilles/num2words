@@ -148,16 +148,16 @@ class LuxembourgishNormalizer:
         text = re.sub(r'(\d+)\s*ml', lambda m: f"{self.lb.to_cardinal(int(m.group(1)))} Milliliter", text)
         text = re.sub(r'(\d+)\s*gr', lambda m: f"{self.lb.to_cardinal(int(m.group(1)))} Gramm", text)
         
-        # Handle decimal percentages with commas (e.g., 93,9%)
+        # Handle decimal percentages with commas (e.g., 93,9%) or with space (e.g., 3,9 %)
         def percent_repl(match):
             percent_str = match.group(1)
-            # Convert comma to dot for the to_percentage method
             percent_val = percent_str.replace(',', '.')
             return self.lb.to_percentage(percent_val)
-        text = re.sub(r'(\d+[,\.]\d+)\s*%', percent_repl, text)
+        text = re.sub(r'(\d+[,.]\d+)\s*%', percent_repl, text)
+        # Handle whole number percentages with optional space
+        text = re.sub(r'(\d+)\s*%', lambda m: f"{self.lb.to_cardinal(int(m.group(1)))} Prozent", text)
         
         # Handle whole number percentages
-        text = re.sub(r'(\d+)\s*%', lambda m: f"{self.lb.to_cardinal(int(m.group(1)))} Prozent", text)
         text = re.sub(r'(\d+)\s*Minutten', lambda m: f"{self.lb.to_cardinal(int(m.group(1)))} Minutten", text)
         
         # Special handling for feminine nouns

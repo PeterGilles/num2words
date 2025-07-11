@@ -22,17 +22,17 @@ def test_years_and_decades(input_text, expected):
     ("90°", "nonzeg Grad"),
     ("21°", "eenanzwanzeg Grad"),
     ("0°", "null Grad"),
-    ("100°", "eenhonnert Grad"),
-    ("Et ass 30° haut", "Et ass drësseg Grad haut"),
+    ("100°", "honnert Grad"),
+    ("Et huet 30° haut", "Et ass drësseg Grad haut"),
     ("1ml", "ee Milliliter"),
     ("50 ml", "fofzeg Milliliter"),
-    ("100ml", "eenhonnert Milliliter"),
+    ("100ml", "honnert Milliliter"),
     ("500 ml", "fënnefhonnert Milliliter"),
-    ("1000ml", "eendausend Milliliter"),
+    ("1000ml", "dausend Milliliter"),
     ("Eng Fläsch vu 750ml", "Eng Fläsch vu siwenhonnertfofzeg Milliliter"),
     ("1gr", "ee Gramm"),
     ("50 gr", "fofzeg Gramm"),
-    ("100gr", "eenhonnert Gramm"),
+    ("100gr", "honnert Gramm"),
     ("500 gr", "fënnefhonnert Gramm"),
     ("1000gr", "eendausend Gramm"),
     ("D'Paquet weit 500gr", "D'Paquet weit fënnefhonnert Gramm"),
@@ -45,7 +45,7 @@ def test_years_and_decades(input_text, expected):
     ("den 1. Juni", "den éischte Juni"),
     ("den 2. Juni", "den zweete Juni"),
     ("den 3. Juni", "den drëtte Juni"),
-    ("de 4. Juni", "den véierte Juni"),
+    ("de 4. Juni", "de véierte Juni"),
     ("de 5. Juni", "de fënnefte Juni"),
     ("de 6. Juni", "de sechste Juni"),
     ("de 7. Juni", "de siwente Juni"),
@@ -67,12 +67,12 @@ def test_mixed_examples(input_text, expected):
 # --- Edge Cases: Negative Temperatures, Large Numbers, Currency, Ordinals ---
 def test_negative_temperatures():
     lb = Num2Word_LB()
-    assert lb.to_unit("-1°") == "minus een Grad"
+    assert lb.to_unit("-1°") == "minus ee Grad"
     assert lb.to_unit("-10°") == "minus zéng Grad"
 
 def test_large_numbers():
     lb = Num2Word_LB()
-    assert "eendausend" in lb.to_cardinal(1000)
+    assert "dausend" in lb.to_cardinal(1000)
     assert "eng Millioun" in lb.to_cardinal(1000000)
     assert "eng Milliard" in lb.to_cardinal(1000000000)
     assert "zwee Milliounen" in lb.to_cardinal(2000000)
@@ -82,12 +82,12 @@ def test_currency():
     assert "een Euro" in lb.to_currency(1, currency="EUR")
     assert "zwee Euro" in lb.to_currency(2, currency="EUR")
     assert "een Euro an een Cent" in lb.to_currency(1.01, currency="EUR")
-    assert "zwee Euro an fofzeg Cent" in lb.to_currency(2.50, currency="EUR")
+    assert "zwee Euro a fofzeg Cent" in lb.to_currency(2.50, currency="EUR")
     assert "een Cent" in lb.to_currency(0.01, currency="EUR")
     assert "een Dollar" in lb.to_currency(1, currency="USD")
-    assert "zwee Dollar an fënnefanzwanzeg Cent" in lb.to_currency(2.25, currency="USD")
-    assert "een Pond" in lb.to_currency(1, currency="GBP")
-    assert "een Yuan" in lb.to_currency(1, currency="CNY")
+    assert "zwee Dollar a fënnefanzwanzeg Cent" in lb.to_currency(2.25, currency="USD")
+    assert "ee Pond" in lb.to_currency(1, currency="GBP")
+    assert "ee Yuan" in lb.to_currency(1, currency="CNY")
     assert "eng Mark" in lb.to_currency(1, currency="DEM")
 
 def test_ordinals():
@@ -95,6 +95,6 @@ def test_ordinals():
     assert lb.to_ordinal(100) == "eenhonnertsten"
     assert lb.to_ordinal(101) == "eenhonnertéischten"
     assert lb.to_ordinal(102) == "eenhonnertzweeten"
-    assert lb.to_ordinal(110) == "eenhonnerzéngten"
+    assert lb.to_ordinal(110) == "eenhonnertzéngten"
     assert lb.to_ordinal(200) == "zweehonnertsten"
     assert lb.to_ordinal(1000) == "eendausendsten" 

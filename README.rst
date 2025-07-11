@@ -1,172 +1,134 @@
-num2words library - Convert numbers to words in multiple languages + Luxembourgish!!
+num2words library - Luxembourgish Number and Text Normalization
 ==================================================================
 
-.. image:: https://img.shields.io/pypi/v/num2words.svg
-   :target: https://pypi.python.org/pypi/num2words
-
-.. image:: https://travis-ci.org/savoirfairelinux/num2words.svg?branch=master
-    :target: https://travis-ci.org/savoirfairelinux/num2words
-
-.. image:: https://coveralls.io/repos/github/savoirfairelinux/num2words/badge.svg?branch=master
-    :target: https://coveralls.io/github/savoirfairelinux/num2words?branch=master
 
 
-``num2words`` is a library that converts numbers like ``42`` to words like ``forty-two``.
-It supports multiple languages (see the list below for full list
-of languages) and can even generate ordinal numbers like ``forty-second``
-(although this last feature is a bit buggy for some languages at the moment).
+This repository contains an enhanced version of ``num2words`` with comprehensive Luxembourgish language support, including a powerful text normalizer for converting numbers, dates, times, and other numerical expressions to Luxembourgish text.
 
-The project is hosted on GitHub_. Contributions are welcome.
-
-.. _GitHub: https://github.com/savoirfairelinux/num2words
+**⚠️ Important:** This Luxembourgish-enhanced version is only available from this GitHub repository and is not available on PyPI.
 
 Installation
 ------------
 
-The easiest way to install ``num2words`` is to use pip::
+Since this Luxembourgish-enhanced version is not available on PyPI, you must install it directly from this GitHub repository:
 
-    pip install num2words
+.. code-block:: bash
 
-Otherwise, you can download the source package and then execute::
+    git clone https://github.com/PeterGilles/num2words.git
+    cd num2words
+    pip install -e .
 
-    python setup.py install
+Or install directly from GitHub:
 
-The test suite in this library is new, so it's rather thin, but it can be run with::
+.. code-block:: bash
 
-    python setup.py test
+    pip install git+https://github.com/PeterGilles/num2words.git
 
-To run the full CI test suite which includes linting and multiple python environments::
+Luxembourgish Language Support
+-----------------------------
 
-    pip install tox
-    tox
+This version includes comprehensive Luxembourgish language support with the following features:
 
-Usage
------
-Command line::
+**Language Code:** ``lb`` (Luxembourgish)
 
-    $ num2words 10001
-    ten thousand and one
-    $ num2words 24,120.10
-    twenty-four thousand, one hundred and twenty point one
-    $ num2words 24,120.10 -l es
-    veinticuatro mil ciento veinte punto uno
-    $num2words 2.14 -l es --to currency
-    dos euros con catorce céntimos
+Basic Usage
+----------
 
-In code there's only one function to use::
+Supported ``to`` options:
+
+- ``cardinal`` (default): Convert to cardinal numbers (e.g., 42 → zweeavéierzeg)
+- ``ordinal``: Convert to ordinal numbers (e.g., 42 → zweeavéierzegsten)
+- ``ordinal_num``: Convert to ordinal numbers as numerals (e.g., 42 → 42.)
+- ``year``: Convert to year form (e.g., 2023 → zweedausenddräianzwanzeg)
+- ``currency``: Convert to currency form (e.g., 1.50 EUR → eent Euro an fofzeg Cent)
+
+Command line with Luxembourgish:
+
+.. code-block:: bash
+
+    $ num2words 10001 -l lb
+    dausendeent
+    $ num2words 24,120.10 -l lb
+    véieranzwanzegdausendhonnertzwanzeg Komma zéng
+    $ num2words 24,120.35 -l lb
+    véieranzwanzegdausendhonnertzwanzeg Komma fënnefandrësseg
+    $ num2words 24.120,35 -l lb
+    véieranzwanzegdausendhonnertzwanzeg Komma fënnefandrësseg
+    $ num2words 1,234.56 -l lb
+    dausendzweehonnertvéierandrësseg Komma sechsafofzeg
+    $ num2words 1.234,56 -l lb
+    dausendzweehonnertvéierandrësseg Komma sechsafofzeg
+
+Note: Both English-style (comma as thousands, dot as decimal) and European-style (dot as thousands, comma as decimal) number formats are supported for all decimal and large number conversions.
+
+In Python code:
+
+.. code-block:: python
 
     >>> from num2words import num2words
-    >>> num2words(42)
-    forty-two
-    >>> num2words(42, to='ordinal')
-    forty-second
-    >>> num2words(42, lang='fr')
-    quarante-deux
+    >>> num2words(42, lang='lb')
+    'zweeavéierzeg'
+    >>> num2words(42, lang='lb', to='ordinal')
+    'zweeavéierzegsten'
+    >>> num2words(2023, lang='lb', to='year')
+    'zweedausenddräianzwanzeg'
 
-Besides the numerical argument, there are two main optional arguments, ``to:`` and ``lang:``
+Luxembourgish Text Normalizer
+-----------------------------
 
-**to:** The converter to use. Supported values are:
+The repository includes a comprehensive text normalizer (`luxembourgish_normalizer.py`) that converts various numerical expressions in Luxembourgish text to their word forms.
 
-* ``cardinal`` (default)
-* ``ordinal``
-* ``ordinal_num``
-* ``year``
-* ``currency``
+Installation and Usage:
 
-**lang:** The language in which to convert the number. Supported values are:
+.. code-block:: bash
 
-* ``en`` (English, default)
-* ``am`` (Amharic)
-* ``ar`` (Arabic)
-* ``az`` (Azerbaijani)
-* ``be`` (Belarusian)
-* ``bn`` (Bangladeshi)
-* ``ca`` (Catalan)
-* ``ce`` (Chechen)
-* ``cs`` (Czech)
-* ``cy`` (Welsh)
-* ``da`` (Danish)
-* ``de`` (German)
-* ``en_GB`` (English - Great Britain)
-* ``en_IN`` (English - India)
-* ``en_NG`` (English - Nigeria)
-* ``es`` (Spanish)
-* ``es_CO`` (Spanish - Colombia)
-* ``es_CR`` (Spanish - Costa Rica)
-* ``es_GT`` (Spanish - Guatemala)
-* ``es_VE`` (Spanish - Venezuela)
-* ``eu`` (EURO)
-* ``fa`` (Farsi)
-* ``fi`` (Finnish)
-* ``fr`` (French)
-* ``fr_BE`` (French - Belgium)
-* ``fr_CH`` (French - Switzerland)
-* ``fr_DZ`` (French - Algeria)
-* ``he`` (Hebrew)
-* ``hi`` (Hindi)
-* ``hu`` (Hungarian)
-* ``id`` (Indonesian)
-* ``is`` (Icelandic)
-* ``it`` (Italian)
-* ``ja`` (Japanese)
-* ``kn`` (Kannada)
-* ``ko`` (Korean)
-* ``kz`` (Kazakh)
-* ``mn`` (Mongolian)
-* ``lt`` (Lithuanian)
-* ``lv`` (Latvian)
-* ``nl`` (Dutch)
-* ``no`` (Norwegian)
-* ``pl`` (Polish)
-* ``pt`` (Portuguese)
-* ``pt_BR`` (Portuguese - Brazilian)
-* ``ro`` (Romanian)
-* ``ru`` (Russian)
-* ``sl`` (Slovene)
-* ``sk`` (Slovak)
-* ``sr`` (Serbian)
-* ``sv`` (Swedish)
-* ``te`` (Telugu)
-* ``tet`` (Tetum)
-* ``tg`` (Tajik)
-* ``tr`` (Turkish)
-* ``th`` (Thai)
-* ``uk`` (Ukrainian)
-* ``vi`` (Vietnamese)
-* ``zh`` (Chinese - Traditional)
-* ``zh_CN`` (Chinese - Simplified / Mainland China)
-* ``zh_TW`` (Chinese - Traditional / Taiwan)
-* ``zh_HK`` (Chinese - Traditional / Hong Kong)
+    python luxembourgish_normalizer.py input_file.txt
+    # or
+    echo "Your text here" | python luxembourgish_normalizer.py
 
-You can supply values like ``fr_FR``; if the country doesn't exist but the
-language does, the code will fall back to the base language (i.e. ``fr``). If
-you supply an unsupported language, ``NotImplementedError`` is raised.
-Therefore, if you want to call ``num2words`` with a fallback, you can do::
+Supported Normalization Types
+----------------------------
 
-    try:
-        return num2words(42, lang=mylang)
-    except NotImplementedError:
-        return num2words(42, lang='en')
+The Luxembourgish normalizer script (`luxembourgish_normalizer.py`) recognizes and converts the following types of expressions:
 
-Additionally, some converters and languages support other optional arguments
-that are needed to make the converter useful in practice.
+1. **Numbers and Large Numbers**
+   - Recognizes: Standalone numbers, numbers with spaces or dots as thousand separators, numbers with decimals (dot or comma)
+   - Converts: All numbers to their full Luxembourgish word form, e.g. ``42`` → ``zweeavéierzeg``, ``40 000`` → ``véierzegdausend``, ``24,120.35`` or ``24.120,35`` → ``véieranzwanzegdausendhonnertzwanzeg Komma fënnefandrësseg``
 
-Wiki
-----
-For additional information on some localization please check the Wiki_.
-And feel free to propose wiki enhancement.
+2. **Dates and Ordinals**
+   - Recognizes: Full dates (e.g. ``30. Abrëll 2010``), numeric dates (e.g. ``22.3.``), ordinals with dot (e.g. ``9. Plaz``)
+   - Converts: Dates to Luxembourgish with correct ordinal and month, ordinals to correct form before nouns
 
-.. _Wiki: https://github.com/savoirfairelinux/num2words/wiki
+3. **Times**
+   - Recognizes: Times in ``HH:MM``, ``HHhMM``, or ``HH.MM`` format (e.g. ``10:34``, ``10h34``, ``17.40``)
+   - Converts: To ``[hour] Auer [minute]`` in Luxembourgish, only for valid times (hours 0–24, minutes 0–59)
 
-History
--------
+4. **Match Results**
+   - Recognizes: Sports scores in ``X:Y`` or ``X-Y`` format (e.g. ``1:1``, ``71:56``)
+   - Converts: To ``[score1] zu [score2]`` using correct Luxembourgish number words (e.g. ``eent zu eent``, ``eenasiwwenzeg zu sechsafofzeg``)
 
-``num2words`` is based on an old library, ``pynum2word``, created by Taro Ogawa
-in 2003. Unfortunately, the library stopped being maintained and the author
-can't be reached. There was another developer, Marius Grigaitis, who in 2011
-added Lithuanian support, but didn't take over maintenance of the project.
+5. **Percentages**
+   - Recognizes: Numbers followed by ``%`` (e.g. ``25%``, ``93,9%``)
+   - Converts: To ``[number] Prozent`` with correct decimal handling (e.g. ``dräiannonzeg Komma néng Prozent``)
 
-I am thus basing myself on Marius Grigaitis' improvements and re-publishing
-``pynum2word`` as ``num2words``.
+6. **Units and Measurements**
+   - Recognizes: Numbers with units (e.g. ``90°``, ``50 kg``, ``100 ml``, ``60 km``, ``2 Stonnen``)
+   - Converts: To full Luxembourgish with correct unit and number form, including feminine forms (e.g. ``zwou Stonnen``)
 
-Virgil Dupras, Savoir-faire Linux
+7. **Phone Numbers**
+   - Recognizes: Lines containing ``Telefon``, ``Tel``, or ``Phone`` with digit groups
+   - Converts: Each digit to word, always including ``null`` for zeros and leading zeros (e.g. ``08`` → ``null aacht``)
+
+8. **Abbreviations**
+   - Recognizes: 2+ consecutive uppercase letters (e.g. ``VW``, ``CSV``, ``FIFA``)
+   - Converts: To Luxembourgish letter pronunciation (e.g. ``FAUWEE``), or as a word if in a custom dictionary (e.g. ``FIFA``)
+
+9. **Years with Suffixes**
+   - Recognizes: Decades like ``1970er``
+   - Converts: To full Luxembourgish decade form (e.g. ``nonzéngdausendsiwwenzénger``)
+
+10. **Currency**
+    - Recognizes: Numbers with currency codes (e.g. ``1,50 EUR``)
+    - Converts: To full Luxembourgish currency form (e.g. ``eent Euro an fofzeg Cent``), with correct grammar
+
+Each normalization type is context-aware and applies Luxembourgish grammar and phonological rules for natural, correct output.
