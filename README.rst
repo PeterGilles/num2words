@@ -129,6 +129,6 @@ The Luxembourgish normalizer script (`luxembourgish_normalizer.py`) recognizes a
 
 10. **Currency**
     - Recognizes: Numbers with currency codes (e.g. ``1,50 EUR``)
-    - Converts: To full Luxembourgish currency form (e.g. ``eent Euro an fofzeg Cent``), with correct grammar
+    - Converts: To full Luxembourgish currency form (e.g. ``eent Euro a fofzeg Cent``), with correct grammar
 
 Each normalization type is context-aware and applies Luxembourgish grammar and phonological rules for natural, correct output.

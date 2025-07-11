@@ -117,6 +117,46 @@ class TextNormalizer:
         text = text.replace("eent Prozent", "een Prozent")
         
         return text
+
+    def normalize_currency(self, text):
+        """
+        Convert currency expressions like '1,50 EUR', '1.50 €', '2,25 USD' to Luxembourgish text.
+        Handles both comma and dot as decimal separators.
+        """
+        # Pattern for currency expressions: number followed by currency code or symbol
+        # Supports both comma and dot as decimal separators
+        currency_pattern = r'(\d+[,.]\d+)\s*(EUR|€|USD|\$|GBP|£|CNY|¥|DEM|DM)'
+        
+        def replace_currency(match):
+            amount_str = match.group(1)
+            currency = match.group(2)
+            
+            # Convert comma to dot for parsing
+            if ',' in amount_str:
+                amount_str = amount_str.replace(',', '.')
+            
+            try:
+                amount = float(amount_str)
+                
+                # Map currency symbols to currency codes
+                currency_map = {
+                    '€': 'EUR',
+                    '$': 'USD', 
+                    '£': 'GBP',
+                    '¥': 'CNY',
+                    'DM': 'DEM'
+                }
+                
+                currency_code = currency_map.get(currency, currency)
+                
+                # Convert to Luxembourgish currency text
+                return self.lb.to_currency(amount, currency_code)
+                
+            except ValueError:
+                # If parsing fails, return original
+                return match.group(0)
+        
+        return re.sub(currency_pattern, replace_currency, text)
         
     def fix_final_n(self, text):
         """
@@ -144,6 +184,9 @@ class TextNormalizer:
         """Apply all normalization rules to the text"""
         # First normalize years with suffix
         result = self.normalize_years_with_suffix(text)
+        
+        # Then normalize currency
+        result = self.normalize_currency(result)
         
         # Then normalize units
         result = self.normalize_units(result)
